@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "ECoS Driver",
+    "slug": "ecos-driver",
+    "version": "1.0.0",
+    "scheme": "ecosdriver",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#071A44",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#071A44"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "nl.modelspoor.ecosdriver",
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "ECoS Driver maakt verbinding met je ESU ECoS in het lokale netwerk om je treinen te besturen.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "nl.modelspoor.ecosdriver",
+      "adaptiveIcon": {
+        "backgroundColor": "#071A44",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kies een foto van je loc voor de locbibliotheek.",
+          "cameraPermission": "Maak een foto van je loc voor de locbibliotheek."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
