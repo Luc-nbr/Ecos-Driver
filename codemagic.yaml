@@ -1,0 +1,37 @@
+# Gratis bouwen op Codemagic (codemagic.io): 500 Mac-bouwminuten per maand, geen betaalkaart nodig.
+# Maakt een onondertekende iPad-app (.ipa) die je met Sideloadly en een gratis Apple ID installeert.
+workflows:
+  ipad-ipa:
+    name: iPad-app (voor Sideloadly)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    environment:
+      node: 22
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Packages installeren
+        script: npm ci
+      - name: Protocoltests
+        script: npm test
+      - name: iOS-project genereren
+        script: CI=1 npx expo prebuild --platform ios --clean
+      - name: App bouwen (zonder ondertekening)
+        script: |
+          WS=$(ls -d ios/*.xcworkspace | head -n1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          xcodebuild -quiet \
+            -workspace "$WS" -scheme "$SCHEME" \
+            -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/app.xcarchive \
+            archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+      - name: .ipa maken
+        script: |
+          APP=$(ls -d build/app.xcarchive/Products/Applications/*.app | head -n1)
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/
+          cd build && zip -qry ECoS-Driver.ipa Payload
+    artifacts:
+      - build/ECoS-Driver.ipa

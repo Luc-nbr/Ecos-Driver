@@ -21,7 +21,16 @@ De app gebruikt een echte TCP-verbinding (`react-native-tcp-socket`). Dat werkt 
 
 GitHub bouwt de app gratis op een Mac in de cloud. Jij zet hem daarna met **Sideloadly** en je gewone, gratis Apple ID op de iPad.
 
-**1. De app downloaden (.ipa)**
+**1. De app laten bouwen (.ipa)**
+
+*Optie 1: Codemagic.* Werkt meteen en kost niets.
+
+1. Maak een gratis account op [codemagic.io](https://codemagic.io) en log in met GitHub.
+2. Kies **Add application** › GitHub › **Ecos-Driver**. Kies als type *codemagic.yaml* (dat bestand staat al in de repo).
+3. Klik op **Start new build**, kies de branch `claude/ecos-driver-app` en de workflow **iPad-app (voor Sideloadly)**.
+4. Na ongeveer 15 minuten download je bij *Artifacts* het bestand **ECoS-Driver.ipa**.
+
+*Optie 2: GitHub Actions.* Dit werkt alleen als Actions op je GitHub-account draait. Start er niets, kijk dan op github.com › *Settings › Billing and plans*: daar staat waarom het geblokkeerd is. Bij een **openbare** repo is Actions altijd gratis.
 
 1. Ga op github.com naar deze repo › **Actions** › **iPad-app bouwen**.
 2. Open de laatste groene run (met vinkje). Wil je een nieuwe build? Tik op **Run workflow**. Na elke wijziging aan de app bouwt GitHub ook vanzelf.
@@ -109,6 +118,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 | `src/store/` | app-state (zustand) en acties; instellingen worden bewaard op de iPad |
 | `src/app/` | schermen (Expo Router): Rijden, Duo, Multi, ECoS, Locomotieven, Instellingen |
 | `src/components/` | knoppen, snelheidsknop, schuifregelaars, panelen |
+| `codemagic.yaml`, `.github/workflows/` | gratis bouwen van de iPad-app in de cloud |
 
 ## Goed om te weten
 
