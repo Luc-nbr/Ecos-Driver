@@ -6,7 +6,7 @@ import { Icon } from '../components/Icon';
 import { DirectionButtons, FunctionButton, LocoPhoto, QuickFunction } from '../components/Loco';
 import { NotConnected } from '../components/Chrome';
 import { BrakePanel, EmergencyStopButton, LiveStatusPanel, RoutesPanel } from '../components/Panels';
-import { InfiniteThrottle } from '../components/InfiniteThrottle';
+import { JogWheel } from '../components/JogWheel';
 import { Button, Panel } from '../components/ui';
 import { selectLoco, setSpeed } from '../store/actions';
 import { useEcos } from '../store/ecos';
@@ -77,9 +77,9 @@ export default function DriveScreen() {
             <Text style={{ color: C.muted, fontSize: 15, marginTop: 6 }}>
               {neutral ? 'Neutraal: kies een rijrichting' : `Rijstap ${loco.speed} van 126 · ${loco.dir === 0 ? 'vooruit' : 'achteruit'}`}
             </Text>
-            <Text style={{ color: C.muted, fontSize: 15, marginTop: 14 }}>Veeg de rol omhoog om sneller te rijden, omlaag om af te remmen.</Text>
+            <Text style={{ color: C.muted, fontSize: 15, marginTop: 14 }}>Draai het wiel met de klok mee om sneller te rijden, tegen de klok in om af te remmen.</Text>
           </View>
-          <InfiniteThrottle value={loco.speed} onChange={(v) => setSpeed(id, v)} height={wide ? 250 : 220} width={wide ? 130 : 110} maxLabel={vmax} disabled={neutral} />
+          <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wide ? 280 : 240} maxLabel={vmax} disabled={neutral} />
         </View>
       </View>
 

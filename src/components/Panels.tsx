@@ -7,7 +7,7 @@ import { useEcos } from '../store/ecos';
 import { C, F, R, shadow } from '../theme';
 import { Icon } from './Icon';
 import { Slider } from './Slider';
-import { arcPath } from './SpeedKnob';
+import { arcPath } from './JogWheel';
 import { Panel, SectionTitle } from './ui';
 
 export function BrakePanel({ id, compact }: { id: number; compact?: boolean }) {

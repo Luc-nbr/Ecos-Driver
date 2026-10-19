@@ -5,10 +5,10 @@ iPad-app (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS
 ## Wat kan de app
 
 - **Verbinden** met de ECoS via wifi (TCP-poort 15471), met automatisch opnieuw verbinden.
-- **Rijden**: een eindeloze rol voor de snelheid (omhoog vegen = sneller, rolt na een snelle veeg nog even door), km/h-meter, Vooruit/Neutraal/Achteruit, rem, noodstop en alle functies F0–F31 per loc als drukknoppen met icoontjes (geel = aan). Functies zoals de tyfoon (met handje) werken zolang je ze vasthoudt.
+- **Rijden**: een eindeloos draaiwiel voor de snelheid, zoals in ECoS Cab: met de klok mee is sneller, en na een zwiep draait het nog even door. Verder een km/h-boog, Vooruit/Neutraal/Achteruit, rem, noodstop en alle functies F0–F31 per loc als drukknoppen met icoontjes (geel = aan). Functies zoals de tyfoon (met handje) werken zolang je ze vasthoudt.
 - **Duo**: twee locs naast elkaar besturen.
 - **Multi**: tien locs tegelijk, in twee rijen van vijf.
-- **ECoS**: een nagebouwd ECoS-bedienpaneel met twee eindeloze draaiknoppen, STOP/GO en een aanraakscherm voor locs, functies en wissels. Het werkt met live gegevens uit je centrale. De ECoS zelf kan zijn scherm niet over het netwerk delen, daarom bouwt de app het na.
+- **ECoS**: een nagebouwd ECoS-bedienpaneel met twee eindeloze draaiwielen, STOP/GO en een aanraakscherm voor locs, functies en wissels. Het werkt met live gegevens uit je centrale. De ECoS zelf kan zijn scherm niet over het netwerk delen, daarom bouwt de app het na.
 - **Locomotieven**: een bibliotheek waarin je locs **toevoegt, aanpast en verwijdert**. Naam, adres en protocol gaan direct naar de ECoS. Een foto, omschrijving, soort, topsnelheid en eigen functienamen en -iconen bewaart de app op de iPad.
 - **Rijwegen en wissels** uit de ECoS schakelen.
 - **Demo-modus**: een ingebouwde ECoS-simulator, zodat je alles zonder centrale kunt proberen.

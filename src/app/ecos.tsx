@@ -8,7 +8,7 @@ import { NotConnected } from '../components/Chrome';
 import { LocoPicker } from '../components/Dialogs';
 import { Icon } from '../components/Icon';
 import { LocoPhoto } from '../components/Loco';
-import { SpeedKnob } from '../components/SpeedKnob';
+import { JogWheel } from '../components/JogWheel';
 import { emergencyStop, setDirection, setFunction, setPower, setSlot, setSpeed, switchAccessory, toggleFunction } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { FunctionView, kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
@@ -169,7 +169,7 @@ function HardKnob({ id, size }: { id: number | null; size: number }) {
   const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   return (
     <View style={{ alignItems: 'center', gap: 10 }}>
-      <SpeedKnob value={loco?.speed ?? 0} onChange={(v) => id != null && setSpeed(id, v)} size={size} showScale={false} endless disabled={id == null || neutral} />
+      <JogWheel value={loco?.speed ?? 0} onChange={(v) => id != null && setSpeed(id, v)} size={size} showScale={false} disabled={id == null || neutral} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Rijrichting omkeren"

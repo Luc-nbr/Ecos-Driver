@@ -9,7 +9,7 @@ import { LocoPicker } from './Dialogs';
 import { Icon } from './Icon';
 import { DirectionButtons, FunctionTile, LocoPhoto } from './Loco';
 import { BrakePanel } from './Panels';
-import { InfiniteThrottle } from './InfiniteThrottle';
+import { JogWheel } from './JogWheel';
 
 /** Venster met alle functies van een loc als tegels. */
 export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: boolean; onClose: () => void }) {
@@ -138,9 +138,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
         <View style={{ alignItems: 'center' }}>
           <Text style={{ color: C.text, fontSize: 64, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
           <Text style={{ color: C.text, fontSize: 18, marginTop: -6 }}>km/h</Text>
-          <View style={{ marginTop: 10 }}>
-            <InfiniteThrottle value={loco.speed} onChange={(v) => setSpeed(id, v)} height={220} width={120} maxLabel={vmax} disabled={neutral} />
-          </View>
+          <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={260} maxLabel={vmax} variant="yellow" disabled={neutral} />
         </View>
         <BrakePanel id={id} compact />
       </View>
@@ -172,7 +170,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
 }
 
 /** Compacte regelaar voor de multi-weergave (2 rijen van 5). */
-export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean }) {
+export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number; dense?: boolean; wheelSize?: number }) {
   const slotIds = useSlotIds('multi');
   const id = slotIds[slot];
   const loco = useLoco(id);
@@ -220,8 +218,8 @@ export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean
         <Text style={{ color: C.text, fontSize: 34, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
         <Text style={{ color: C.textSoft, fontSize: 14 }}>km/h</Text>
       </View>
-      <View style={{ flex: 1, minHeight: dense ? 80 : 110, flexDirection: 'row', alignItems: 'stretch', justifyContent: 'center', gap: 8 }}>
-        <InfiniteThrottle value={loco.speed} onChange={(v) => setSpeed(id, v)} width={74} compact maxLabel={vmax} label={`Snelheid ${loco.name}`} disabled={neutral} />
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wheelSize} showScale={false} label={`Snelheid ${loco.name}`} disabled={neutral} />
       </View>
       <DirectionButtons id={id} dir={loco.dir} compact />
       <View style={{ flexDirection: 'row', gap: 6 }}>
