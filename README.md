@@ -15,9 +15,29 @@ iPad-app (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS
 
 ## Op je iPad zetten
 
-De app gebruikt een echte TCP-verbinding (`react-native-tcp-socket`). Dat werkt niet in Expo Go, dus de app moet als eigen app gebouwd worden. Er zijn twee manieren.
+De app gebruikt een echte TCP-verbinding (`react-native-tcp-socket`). Dat werkt niet in Expo Go, dus de app moet als eigen app gebouwd worden.
 
-### Manier A: zonder Mac (bouwen in de cloud met EAS)
+### Gratis, zonder Mac (aanbevolen)
+
+GitHub bouwt de app gratis op een Mac in de cloud. Jij zet hem daarna met **Sideloadly** en je gewone, gratis Apple ID op de iPad.
+
+**1. De app downloaden (.ipa)**
+
+1. Ga op github.com naar deze repo › **Actions** › **iPad-app bouwen**.
+2. Open de laatste groene run (met vinkje). Wil je een nieuwe build? Tik op **Run workflow**. Na elke wijziging aan de app bouwt GitHub ook vanzelf.
+3. Download onderaan bij *Artifacts* het bestand **ECoS-Driver-ipa** en pak de zip uit. Daarin zit `ECoS-Driver.ipa`.
+
+**2. Op de iPad zetten met Sideloadly (Windows of Mac)**
+
+1. Installeer [Sideloadly](https://sideloadly.io). Op Windows heb je ook **iTunes** en **iCloud** nodig, de versies van apple.com en niet uit de Microsoft Store.
+2. Sluit de iPad met een kabel aan en tik op de iPad op *Vertrouw deze computer*.
+3. Sleep `ECoS-Driver.ipa` in Sideloadly, vul je Apple ID in en klik op **Start**. Je kunt hiervoor ook een apart, gratis Apple ID maken.
+4. Op de iPad: *Instellingen › Algemeen › VPN en apparaatbeheer* › je Apple ID › **Vertrouw**.
+5. Zet op iPadOS 16 of nieuwer de **Ontwikkelaarsmodus** aan: *Instellingen › Privacy en beveiliging › Ontwikkelaarsmodus*. De iPad start daarna opnieuw op.
+
+Met een gratis Apple ID werkt de app **7 dagen**. Daarna zet je hem op dezelfde manier opnieuw op de iPad. Je instellingen en locs blijven bewaard. In Sideloadly kun je ook automatisch vernieuwen aanzetten: dat gebeurt dan via wifi zolang je computer aan staat.
+
+### Manier A: zonder Mac, met een betaald Apple-account (EAS)
 
 Je hebt nodig: een computer (Windows, Mac of Linux) met [Node.js](https://nodejs.org) 20 of nieuwer, een gratis account op [expo.dev](https://expo.dev) en een betaald **Apple Developer**-account (€99 per jaar). Apple staat installeren op je eigen iPad via de cloud alleen toe met dat account.
 
