@@ -169,7 +169,7 @@ function HardKnob({ id, size }: { id: number | null; size: number }) {
   const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   return (
     <View style={{ alignItems: 'center', gap: 10 }}>
-      <SpeedKnob value={loco?.speed ?? 0} onChange={(v) => id != null && setSpeed(id, v)} size={size} showScale={false} disabled={id == null || neutral} />
+      <SpeedKnob value={loco?.speed ?? 0} onChange={(v) => id != null && setSpeed(id, v)} size={size} showScale={false} endless disabled={id == null || neutral} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Rijrichting omkeren"

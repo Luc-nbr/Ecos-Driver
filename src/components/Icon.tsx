@@ -48,6 +48,7 @@ const PATHS: Record<string, string[]> = {
   chevronRight: ['M9 6l6 6-6 6'],
   chevronLeft: ['M15 6l-6 6 6 6'],
   chevronDown: ['M6 9l6 6 6-6'],
+  chevronUp: ['M6 15l6-6 6 6'],
   arrowUp: ['M12 20V5', 'M6 11l6-6 6 6'],
   arrowDown: ['M12 4v15', 'M6 13l6 6 6-6'],
   neutral: ['M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0'],

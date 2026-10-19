@@ -9,8 +9,7 @@ import { LocoPicker } from './Dialogs';
 import { Icon } from './Icon';
 import { DirectionButtons, FunctionTile, LocoPhoto } from './Loco';
 import { BrakePanel } from './Panels';
-import { Slider } from './Slider';
-import { SpeedKnob } from './SpeedKnob';
+import { InfiniteThrottle } from './InfiniteThrottle';
 
 /** Venster met alle functies van een loc als tegels. */
 export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: boolean; onClose: () => void }) {
@@ -139,7 +138,9 @@ export function DuoThrottle({ slot }: { slot: number }) {
         <View style={{ alignItems: 'center' }}>
           <Text style={{ color: C.text, fontSize: 64, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
           <Text style={{ color: C.text, fontSize: 18, marginTop: -6 }}>km/h</Text>
-          <SpeedKnob value={loco.speed} onChange={(v) => setSpeed(id, v)} size={250} maxLabel={vmax} variant="yellow" disabled={neutral} />
+          <View style={{ marginTop: 10 }}>
+            <InfiniteThrottle value={loco.speed} onChange={(v) => setSpeed(id, v)} height={220} width={120} maxLabel={vmax} disabled={neutral} />
+          </View>
         </View>
         <BrakePanel id={id} compact />
       </View>
@@ -220,7 +221,7 @@ export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean
         <Text style={{ color: C.textSoft, fontSize: 14 }}>km/h</Text>
       </View>
       <View style={{ flex: 1, minHeight: dense ? 80 : 110, flexDirection: 'row', alignItems: 'stretch', justifyContent: 'center', gap: 8 }}>
-        <Slider vertical value={loco.speed} max={126} onChange={(v) => setSpeed(id, v)} thickness={22} label={`Snelheid ${loco.name}`} disabled={neutral} />
+        <InfiniteThrottle value={loco.speed} onChange={(v) => setSpeed(id, v)} width={74} compact maxLabel={vmax} label={`Snelheid ${loco.name}`} disabled={neutral} />
       </View>
       <DirectionButtons id={id} dir={loco.dir} compact />
       <View style={{ flexDirection: 'row', gap: 6 }}>

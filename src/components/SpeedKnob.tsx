@@ -31,6 +31,7 @@ export function SpeedKnob({
   variant = 'dark',
   disabled,
   showScale = true,
+  endless = false,
 }: {
   value: number;
   onChange: (v: number) => void;
@@ -39,6 +40,8 @@ export function SpeedKnob({
   variant?: 'dark' | 'yellow';
   disabled?: boolean;
   showScale?: boolean;
+  /** Eindeloze draaiknop: draaien verandert de snelheid, zonder begin of eind (zoals de ECoS). */
+  endless?: boolean;
 }) {
   const ref = useRef<React.ComponentRef<typeof View>>(null);
   const center = useRef({ x: 0, y: 0 });
@@ -48,6 +51,12 @@ export function SpeedKnob({
   cb.current = onChange;
   const dis = useRef(disabled);
   dis.current = disabled;
+  const endlessRef = useRef(endless);
+  endlessRef.current = endless;
+  const lastAngle = useRef<number | null>(null);
+  const acc = useRef(0);
+  const cur = useRef(value);
+  cur.current = value;
 
   const responder = useMemo(() => {
     const update = (px: number, py: number) => {
@@ -57,6 +66,25 @@ export function SpeedKnob({
       if (dx * dx + dy * dy < 12 * 12) return; // te dicht bij het midden
       let deg = (Math.atan2(dy, dx) * 180) / Math.PI;
       if (deg < 0) deg += 360;
+      if (endlessRef.current) {
+        if (lastAngle.current !== null) {
+          let d = deg - lastAngle.current;
+          if (d > 180) d -= 360;
+          if (d < -180) d += 360;
+          acc.current += d / 2.5; // 2,5 graad draaien = 1 rijstap
+          const steps = acc.current > 0 ? Math.floor(acc.current) : Math.ceil(acc.current);
+          if (steps !== 0) {
+            acc.current -= steps;
+            const next = Math.max(0, Math.min(126, cur.current + steps));
+            if (next !== cur.current) {
+              cur.current = next;
+              cb.current(next);
+            }
+          }
+        }
+        lastAngle.current = deg;
+        return;
+      }
       let rel = (deg - START + 360) % 360;
       let frac: number;
       if (rel > SWEEP) frac = last.current > 0.5 ? 1 : 0;
@@ -72,6 +100,8 @@ export function SpeedKnob({
       onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: (e) => {
         const { pageX, pageY } = e.nativeEvent;
+        lastAngle.current = null;
+        acc.current = 0;
         ref.current?.measureInWindow((x, y, w, h) => {
           center.current = { x: x + w / 2, y: y + h / 2 };
           update(pageX, pageY);
