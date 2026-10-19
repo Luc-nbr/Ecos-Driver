@@ -1,0 +1,73 @@
+# Bouwt een onondertekende iPad-app (.ipa) op een gratis macOS-machine van GitHub.
+# Die .ipa zet je met een gratis Apple ID op je iPad via Sideloadly of AltStore.
+name: iPad-app bouwen
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/ecos-driver-app]
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'app.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ios-ipa.yml'
+
+concurrency:
+  group: ios-ipa
+  cancel-in-progress: true
+
+jobs:
+  ipa:
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Packages installeren
+        run: npm ci
+
+      - name: Protocoltests
+        run: npm test
+
+      - name: iOS-project genereren
+        run: npx expo prebuild --platform ios --clean
+        env:
+          CI: 1
+
+      - name: App bouwen (zonder ondertekening)
+        run: |
+          WS=$(ls -d ios/*.xcworkspace | head -n1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          echo "Workspace: $WS, scheme: $SCHEME"
+          xcodebuild -quiet \
+            -workspace "$WS" -scheme "$SCHEME" \
+            -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/app.xcarchive" \
+            archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+      - name: .ipa maken
+        run: |
+          APP=$(ls -d "$RUNNER_TEMP/app.xcarchive/Products/Applications/"*.app | head -n1)
+          mkdir -p "$RUNNER_TEMP/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/Payload/"
+          cd "$RUNNER_TEMP" && zip -qry ECoS-Driver.ipa Payload
+          ls -lh "$RUNNER_TEMP/ECoS-Driver.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ECoS-Driver-ipa
+          path: ${{ runner.temp }}/ECoS-Driver.ipa
+          retention-days: 30
