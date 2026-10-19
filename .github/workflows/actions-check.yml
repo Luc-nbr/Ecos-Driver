@@ -1,0 +1,11 @@
+name: Actions-check
+on: [push]
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Linux-runner werkt"
+  mac:
+    runs-on: macos-15
+    steps:
+      - run: sw_vers && ls /Applications | grep Xcode
