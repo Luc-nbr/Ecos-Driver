@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { LocoPicker } from '../components/Dialogs';
 import { Icon } from '../components/Icon';
-import { DirectionButtons, FunctionRow, LocoPhoto, QuickFunction } from '../components/Loco';
+import { DirectionButtons, FunctionButton, LocoPhoto, QuickFunction } from '../components/Loco';
 import { NotConnected } from '../components/Chrome';
 import { BrakePanel, EmergencyStopButton, LiveStatusPanel, RoutesPanel } from '../components/Panels';
 import { SpeedKnob } from '../components/SpeedKnob';
@@ -104,10 +104,10 @@ export default function DriveScreen() {
     <Panel style={{ flex: wide ? 1 : undefined, padding: 10, minHeight: wide ? undefined : 420 }}>
       <Text style={{ color: C.text, fontSize: 19, fontWeight: F.bold, margin: 6 }}>Functies</Text>
       <View style={{ flex: 1 }}>
-        <ScrollView style={wide ? StyleSheet.absoluteFill : undefined} contentContainerStyle={{ gap: 8, paddingBottom: 6 }}>
+        <ScrollView style={wide ? StyleSheet.absoluteFill : undefined} contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 6 }}>
           {!loco.detailsLoaded ? <Text style={{ color: C.muted, fontSize: 16, padding: 8 }}>Functies laden…</Text> : null}
           {funcs.map((f) => (
-            <FunctionRow key={f.n} id={id} f={f} />
+            <FunctionButton key={f.n} id={id} f={f} />
           ))}
         </ScrollView>
       </View>

@@ -6,7 +6,6 @@ import { useEcos } from '../store/ecos';
 import type { FunctionView } from '../store/hooks';
 import { C, F, R } from '../theme';
 import { Icon } from './Icon';
-import { Toggle } from './ui';
 
 /** Foto van de loc, of een getekende loc als er nog geen foto is. */
 export function LocoPhoto({ uri, style, rounded = R.md, hint = false }: { uri?: string; style?: StyleProp<ViewStyle>; rounded?: number; hint?: boolean }) {
@@ -89,42 +88,43 @@ function fnHandlers(id: number, f: FunctionView) {
   return { onPress: () => toggleFunction(id, f.n) };
 }
 
-/** Functie als rij met schakelaar (zoals in de rechterkolom van de mockup). */
-export function FunctionRow({ id, f }: { id: number; f: FunctionView }) {
+/** Functie als grote drukknop met icoon (rijscherm). Geel = aan. */
+export function FunctionButton({ id, f }: { id: number; f: FunctionView }) {
+  const fg = f.on ? C.ink : C.text;
   return (
     <Pressable
-      accessibilityRole="switch"
-      accessibilityState={{ checked: f.on }}
-      aria-checked={f.on}
-      accessibilityLabel={`F${f.n} ${f.label}`}
+      accessibilityRole="button"
+      accessibilityState={{ selected: f.on }}
+      aria-pressed={f.on}
+      accessibilityLabel={`F${f.n} ${f.label}${f.moment ? ', vasthouden' : ''}`}
       {...fnHandlers(id, f)}
       style={({ pressed }) => [
         {
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 12,
+          flexBasis: '46%',
+          flexGrow: 1,
+          minHeight: 112,
           padding: 10,
           borderRadius: R.md,
-          backgroundColor: f.on ? C.panelHi : C.panel2,
-          borderWidth: 1,
-          borderColor: f.on ? '#3B5DA8' : C.borderSoft,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 6,
+          backgroundColor: f.on ? C.yellow : C.panel2,
+          borderWidth: 1.5,
+          borderColor: f.on ? C.yellow : C.border,
         },
-        pressed ? { opacity: 0.85 } : null,
+        pressed ? { transform: [{ scale: 0.96 }], opacity: 0.9 } : null,
       ]}
     >
-      <View style={{ width: 54, height: 54, borderRadius: 12, backgroundColor: '#0A1D49', alignItems: 'center', justifyContent: 'center' }}>
-        <Text style={{ color: C.text, fontSize: 22, fontWeight: F.heavy }}>F{f.n}</Text>
-      </View>
-      <View style={{ flex: 1, gap: 4 }}>
-        <Icon name={f.icon} size={28} color={f.on ? C.yellow : C.text} />
-        <Text style={{ color: C.textSoft, fontSize: 15 }} numberOfLines={1}>
-          {f.label}
-          {f.moment ? '  ·  vasthouden' : ''}
-        </Text>
-      </View>
-      <View pointerEvents="none">
-        <Toggle value={f.on} />
-      </View>
+      <Text style={{ position: 'absolute', top: 8, left: 10, color: fg, fontSize: 16, fontWeight: F.heavy }}>F{f.n}</Text>
+      {f.moment ? (
+        <View style={{ position: 'absolute', top: 8, right: 8 }}>
+          <Icon name="hand" size={16} color={f.on ? C.ink : C.muted} />
+        </View>
+      ) : null}
+      <Icon name={f.icon} size={36} color={fg} />
+      <Text style={{ color: f.on ? C.ink : C.textSoft, fontSize: 14, fontWeight: F.semi, textAlign: 'center' }} numberOfLines={2}>
+        {f.label}
+      </Text>
     </Pressable>
   );
 }

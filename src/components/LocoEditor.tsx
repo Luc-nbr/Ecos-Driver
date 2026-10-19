@@ -202,7 +202,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
           <View style={{ gap: 10 }}>
             <Text style={{ color: C.text, fontSize: 20, fontWeight: F.bold }}>Functies</Text>
             <Text style={{ color: C.muted, fontSize: 14 }}>
-              Pas namen en iconen aan, maak een functie een drukknop (vasthouden), verberg hem, of zet hem als snelknop (maximaal 2) op het rijscherm.
+              Pas namen en iconen aan, laat een functie alleen werken zolang je drukt (zoals een tyfoon), verberg hem, of zet hem als snelknop (maximaal 2) op het rijscherm.
             </Text>
             {fnNumbers.map((n) => {
               const base = fnBase(n);
@@ -220,7 +220,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
                     <Icon name={o.icon || base.icon} size={26} color={o.hidden ? C.muted : C.yellow} />
                     <Text style={{ color: o.hidden ? C.muted : C.text, fontSize: 17, flex: 1 }}>{o.label || base.label}</Text>
                     {quick.includes(n) ? <Text style={{ color: C.yellow, fontSize: 13, fontWeight: F.bold }}>SNELKNOP</Text> : null}
-                    {(o.moment ?? base.moment) ? <Text style={{ color: C.muted, fontSize: 13 }}>drukknop</Text> : null}
+                    {(o.moment ?? base.moment) ? <Text style={{ color: C.muted, fontSize: 13 }}>vasthouden</Text> : null}
                     <Icon name={open ? 'chevronDown' : 'chevronRight'} size={20} color={C.muted} />
                   </Pressable>
                   {open ? (
@@ -252,8 +252,8 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
                       </ScrollView>
                       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 24 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <Toggle value={o.moment ?? base.moment} onChange={(v) => setFn(n, { moment: v })} label="Drukknop" />
-                          <Text style={{ color: C.text, fontSize: 16 }}>Drukknop (vasthouden)</Text>
+                          <Toggle value={o.moment ?? base.moment} onChange={(v) => setFn(n, { moment: v })} label="Alleen actief zolang je drukt" />
+                          <Text style={{ color: C.text, fontSize: 16 }}>Alleen actief zolang je drukt</Text>
                         </View>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <Toggle value={quick.includes(n)} onChange={() => toggleQuick(n)} label="Snelknop" />

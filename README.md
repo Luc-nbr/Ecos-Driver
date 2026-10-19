@@ -5,7 +5,7 @@ iPad-app (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS
 ## Wat kan de app
 
 - **Verbinden** met de ECoS via wifi (TCP-poort 15471), met automatisch opnieuw verbinden.
-- **Rijden**: grote snelheidsknop met km/h, Vooruit/Neutraal/Achteruit, rem, noodstop en alle functies F0–F31 per loc. Drukknoppen (zoals de tyfoon) werken zolang je ze vasthoudt.
+- **Rijden**: grote snelheidsknop met km/h, Vooruit/Neutraal/Achteruit, rem, noodstop en alle functies F0–F31 per loc als drukknoppen met icoontjes (geel = aan). Functies zoals de tyfoon (met handje) werken zolang je ze vasthoudt.
 - **Duo**: twee locs naast elkaar besturen.
 - **Multi**: tien locs tegelijk, in twee rijen van vijf.
 - **ECoS**: een nagebouwd ECoS-bedienpaneel met twee draaiknoppen, STOP/GO en een aanraakscherm voor locs, functies en wissels. Het werkt met live gegevens uit je centrale. De ECoS zelf kan zijn scherm niet over het netwerk delen, daarom bouwt de app het na.

@@ -3,12 +3,12 @@ import type { IconName } from '../components/Icon';
 // ECoS functiesymbolen (uit de ESU PC-interface specificatie, tabel 8.2)
 // vertaald naar een icoon en een Nederlands label.
 const EXACT: Record<number, { icon: IconName; label: string }> = {
-  2: { icon: 'more', label: 'Functie' },
+  2: { icon: 'button', label: 'Functie' },
   3: { icon: 'headlight', label: 'Frontseinen' },
   4: { icon: 'headlight', label: 'Licht voor' },
   5: { icon: 'taillight', label: 'Licht achter' },
   7: { icon: 'sound', label: 'Geluid' },
-  8: { icon: 'sound', label: 'Muziek' },
+  8: { icon: 'music', label: 'Muziek' },
   9: { icon: 'speaker', label: 'Omroep' },
   10: { icon: 'shunting', label: 'Rangeerstand' },
   11: { icon: 'gauge', label: 'Optrekvertraging uit' },
@@ -43,7 +43,7 @@ const EXACT: Record<number, { icon: IconName; label: string }> = {
 /** Keuzelijst voor het bewerken van functies in de bibliotheek. */
 export const FUNCTION_ICON_CHOICES: IconName[] = [
   'headlight', 'taillight', 'light', 'horn', 'sound', 'speaker', 'bell', 'fan', 'compressor', 'pantograph',
-  'coupling', 'driver', 'cabin', 'door', 'shunting', 'brake', 'steam', 'smoke', 'snow', 'gauge', 'more',
+  'coupling', 'driver', 'cabin', 'door', 'shunting', 'brake', 'steam', 'smoke', 'snow', 'gauge', 'music', 'bolt', 'star', 'button',
 ];
 
 export function describeSymbol(symbol: number | undefined, n: number): { icon: IconName; label: string } {
@@ -53,5 +53,5 @@ export function describeSymbol(symbol: number | undefined, n: number): { icon: I
     if (EXACT[low]) return EXACT[low];
   }
   if (n === 0) return { icon: 'headlight', label: 'Licht' };
-  return { icon: 'more', label: `Functie ${n}` };
+  return { icon: 'button', label: `Functie ${n}` };
 }
