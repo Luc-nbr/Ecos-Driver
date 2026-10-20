@@ -37,7 +37,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "sim": "tsx tools/ecos-sim-server.ts",
-    "test": "tsx tools/protocol.test.ts",
+    "test": "tsx tools/protocol.test.ts && tsx tools/vnc.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "private": true

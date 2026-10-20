@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { setSlot, setSpeed, stopLoco } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
-import { C, F, R } from '../theme';
+import { C, F, R, themed } from '../theme';
 import { LocoPicker, Sheet } from './Dialogs';
 import { Icon } from './Icon';
 import { JogWheel } from './JogWheel';
@@ -65,7 +65,7 @@ function EmptySlot({ label, onPress, big }: { label: string; onPress: () => void
   );
 }
 
-const card = { backgroundColor: C.panel, borderRadius: R.xl, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border } as const;
+const card = themed(() => ({ backgroundColor: C.panel, borderRadius: R.xl, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border }) as const);
 
 /** Volledige regelaar voor de duo-weergave. */
 export function DuoThrottle({ slot }: { slot: number }) {
@@ -103,7 +103,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
 
   const vmax = vmaxOf(loco, meta);
   return (
-    <View style={[card, { flex: 1, padding: 18, gap: 16 }]}>
+    <View style={[card(), { flex: 1, padding: 18, gap: 16 }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <LocoPhoto uri={meta.photo} style={{ width: 96, height: 58 }} rounded={12} />
         <View style={{ flex: 1, minWidth: 0 }}>
@@ -186,7 +186,7 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
   }
   const vmax = vmaxOf(loco, meta);
   return (
-    <View style={[card, { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.accent } : null]}>
+    <View style={[card(), { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.accent } : null]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <Text style={{ color: C.muted, fontSize: 12, fontWeight: F.bold, width: 16 }}>{slot + 1}</Text>
         <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi, flex: 1 }} numberOfLines={1}>
@@ -220,7 +220,7 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
         accessibilityRole="button"
         accessibilityLabel={`${loco.name} stoppen`}
         onPress={() => stopLoco(id)}
-        style={({ pressed }) => [{ height: 40, borderRadius: 12, backgroundColor: 'rgba(255,69,58,0.16)', alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
+        style={({ pressed }) => [{ height: 40, borderRadius: 12, backgroundColor: C.redSoft, alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
       >
         <Text style={{ color: C.red, fontSize: 15, fontWeight: F.bold }}>Stop</Text>
       </Pressable>

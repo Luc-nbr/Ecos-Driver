@@ -7,9 +7,9 @@ import { Button, Panel } from '../components/ui';
 import { connect, disconnect } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { Profile, useSettings } from '../store/settings';
-import { C, F, R } from '../theme';
+import { C, F, R, themed } from '../theme';
 
-const input = { backgroundColor: C.panel2, borderRadius: 12, color: C.text, fontSize: 17, paddingHorizontal: 14, height: 48 } as const;
+const input = themed(() => ({ backgroundColor: C.panel2, borderRadius: 12, color: C.text, fontSize: 17, paddingHorizontal: 14, height: 48 }) as const);
 
 function ProfileSheet({ profile, onClose }: { profile: Profile | null; onClose: () => void }) {
   const s = useSettings();
@@ -17,14 +17,18 @@ function ProfileSheet({ profile, onClose }: { profile: Profile | null; onClose: 
   const [name, setName] = useState(profile?.name ?? '');
   const [host, setHost] = useState(profile?.host ?? '');
   const [port, setPort] = useState(String(profile?.port ?? 15471));
+  const [vncPort, setVncPort] = useState(String(profile?.vncPort ?? 5900));
+  const [vncPassword, setVncPassword] = useState(profile?.vncPassword ?? '');
+  const vncPortNum = Number(vncPort);
+  const vncOk = Number.isInteger(vncPortNum) && vncPortNum > 0 && vncPortNum < 65536;
   const hostOk = /^[a-zA-Z0-9.-]+$/.test(host.trim());
   const portNum = Number(port);
   const portOk = Number.isInteger(portNum) && portNum > 0 && portNum < 65536;
-  const ok = name.trim().length > 0 && hostOk && portOk;
+  const ok = name.trim().length > 0 && hostOk && portOk && vncOk;
 
   const save = () => {
     if (!ok || !profile) return;
-    const p: Profile = { id: profile.id, name: name.trim(), host: host.trim(), port: portNum };
+    const p: Profile = { id: profile.id, name: name.trim(), host: host.trim(), port: portNum, vncPort: vncPortNum, vncPassword };
     s.set({ profiles: isNew ? [...s.profiles, p] : s.profiles.map((x) => (x.id === p.id ? p : x)) });
     onClose();
   };
@@ -34,7 +38,7 @@ function ProfileSheet({ profile, onClose }: { profile: Profile | null; onClose: 
       <Text style={{ color: C.text, fontSize: 22, fontWeight: F.bold }}>{isNew ? 'Nieuwe centrale' : 'Centrale bewerken'}</Text>
       <View style={{ gap: 6 }}>
         <Text style={{ color: C.muted, fontSize: 14, fontWeight: F.semi }}>Naam</Text>
-        <TextInput value={name} onChangeText={setName} placeholder="bijv. Thuisbaan" placeholderTextColor={C.muted} style={input} accessibilityLabel="Naam centrale" maxLength={30} />
+        <TextInput value={name} onChangeText={setName} placeholder="bijv. Thuisbaan" placeholderTextColor={C.muted} style={input()} accessibilityLabel="Naam centrale" maxLength={30} />
       </View>
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <View style={{ flex: 3, gap: 6 }}>
@@ -47,16 +51,26 @@ function ProfileSheet({ profile, onClose }: { profile: Profile | null; onClose: 
             keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'default'}
             autoCapitalize="none"
             autoCorrect={false}
-            style={[input, host && !hostOk ? { borderWidth: 1, borderColor: C.red } : null]}
+            style={[input(), host && !hostOk ? { borderWidth: 1, borderColor: C.red } : null]}
             accessibilityLabel="IP-adres van de ECoS"
           />
         </View>
         <View style={{ flex: 1, gap: 6 }}>
           <Text style={{ color: C.muted, fontSize: 14, fontWeight: F.semi }}>Poort</Text>
-          <TextInput value={port} onChangeText={(t) => setPort(t.replace(/[^0-9]/g, ''))} keyboardType="number-pad" style={input} accessibilityLabel="Poort" maxLength={5} />
+          <TextInput value={port} onChangeText={(t) => setPort(t.replace(/[^0-9]/g, ''))} keyboardType="number-pad" style={input()} accessibilityLabel="Poort" maxLength={5} />
         </View>
       </View>
       <Text style={{ color: C.muted, fontSize: 13 }}>Het IP-adres staat op de ECoS onder Setup › Netwerk. De poort is meestal 15471.</Text>
+      <View style={{ flexDirection: 'row', gap: 12 }}>
+        <View style={{ flex: 1, gap: 6 }}>
+          <Text style={{ color: C.muted, fontSize: 14, fontWeight: F.semi }}>VNC-poort (live scherm)</Text>
+          <TextInput value={vncPort} onChangeText={(t) => setVncPort(t.replace(/[^0-9]/g, ''))} keyboardType="number-pad" style={input()} accessibilityLabel="VNC-poort" maxLength={5} />
+        </View>
+        <View style={{ flex: 2, gap: 6 }}>
+          <Text style={{ color: C.muted, fontSize: 14, fontWeight: F.semi }}>VNC-wachtwoord (als dat nodig is)</Text>
+          <TextInput value={vncPassword} onChangeText={setVncPassword} secureTextEntry autoCapitalize="none" autoCorrect={false} placeholder="leeg laten als er geen is" placeholderTextColor={C.muted} style={input()} accessibilityLabel="VNC-wachtwoord" maxLength={8} />
+        </View>
+      </View>
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <Button title="Annuleren" onPress={onClose} style={{ flex: 1 }} />
         <Button title="Bewaren" kind="primary" onPress={save} disabled={!ok} style={{ flex: 1 }} />
@@ -145,7 +159,7 @@ export default function CentralesScreen() {
       </View>
 
       {error && !connected && !busy ? (
-        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: R.md, backgroundColor: 'rgba(255,69,58,0.14)' }}>
+        <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center', padding: 14, borderRadius: R.md, backgroundColor: C.redSoft }}>
           <Icon name="warning" size={20} color={C.red} />
           <Text style={{ color: C.text, fontSize: 15, flex: 1 }}>{error}</Text>
         </View>

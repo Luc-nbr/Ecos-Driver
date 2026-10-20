@@ -11,9 +11,10 @@ De app is ingericht als een Apple-app op de iPad: een zijbalk links (staand smal
 - **Rijden**: eindeloos draaiwiel voor de snelheid (met de klok mee = sneller, draait na een zwiep nog even door), Vooruit/Neutraal/Achteruit, rem, loc stoppen en alle functies F0–F31 als drukknoppen met icoontjes (amber = aan; met handje = alleen zolang je drukt).
 - **Loc wisselen in elk rijscherm**: op Rijden met de strook recente locs bovenaan of de knop *Wissel loc*; in Duo, Multi en op het ECoS-scherm met een eigen *Wissel loc*-knop per regelaar. Het wisselvenster heeft zoeken en de filters Alle, Recent en Favorieten.
 - **Duo**: twee locs naast elkaar. **Multi**: tien locs in twee rijen van vijf.
-- **ECoS-scherm**: een nagebouwd ECoS-bedienpaneel met twee draaiwielen, STOP/GO en het aanraakscherm voor locs, functies en wissels.
+- **ECoS-scherm**: het **echte scherm van de ECoS live via VNC**: tik en sleep om te bedienen. VNC-poort (standaard 5900) en wachtwoord stel je per centrale in. Of kies *Nagebouwd*: een bedienpaneel met twee draaiwielen, STOP/GO en een aanraakscherm voor locs, functies en wissels.
 - **Bibliotheek**: locs in een tabel (sorteren, zoeken, filteren), toevoegen, aanpassen en verwijderen op de ECoS; foto, omschrijving, soort, topsnelheid en eigen functienamen/-iconen bewaart de app op de iPad. Tweede tabblad: wissels en rijwegen.
 - STOP/GO voor de hele baan staat altijd rechtsboven.
+- **Licht en donker thema**: in Instellingen kies je Automatisch (volgt de iPad), Licht of Donker.
 
 ## Op je iPad zetten
 
@@ -102,8 +103,8 @@ Met een gratis Apple ID werkt de app 7 dagen. Daarna voer je het commando opnieu
 ## Testen zonder ECoS
 
 ```bash
-npm test        # protocoltests: parser, client en simulator, ook via echte TCP
-npm run sim     # start een nep-ECoS op poort 15471 op je computer
+npm test        # protocoltests (ECoS en VNC), ook via echte TCP
+npm run sim     # start een nep-ECoS op poort 15471 en een nep-VNC-scherm op poort 5900
 npm run web     # app in de browser (alleen de demo-modus werkt in een browser)
 ```
 
@@ -117,6 +118,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 | `src/ecos/client.ts` | ECoS-client: locs, functies, wissels, aanmaken/wijzigen/verwijderen |
 | `src/ecos/simulator.ts` | ECoS-simulator voor de demo-modus en de tests |
 | `src/ecos/tcpTransport.ts` | TCP-verbinding op iOS en Android |
+| `src/vnc/` | eigen VNC-client (RFB 3.3–3.8, wachtwoord via DES, Raw/CopyRect) en een nagebouwde VNC-server voor demo en tests |
 | `src/store/` | app-state (zustand) en acties; instellingen worden bewaard op de iPad |
 | `src/app/` | schermen (Expo Router): Centrales, Overzicht, Rijden, Duo, Multi, ECoS-scherm, Bibliotheek, Instellingen |
 | `src/components/` | knoppen, snelheidsknop, schuifregelaars, panelen |
@@ -126,6 +128,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 
 - De ECoS kent snelheid 0–127, waarbij 1 een noodstop is. De app gebruikt daarom stappen 0–126 en slaat 1 over.
 - Zodra je een loc bedient, neemt de app de besturing over (`request(id, control, force)`). Een loc die je ook op de ECoS of een handregelaar bedient, kan dus "overgenomen" worden. De app meldt dat.
+- VNC: de ECoS moet een VNC-server aanbieden (ECoS CAB gebruikt dit ook). Lukt verbinden niet, controleer dan op de ECoS of VNC aan staat en welke poort en welk wachtwoord hij gebruikt. Het beeld wordt een paar keer per seconde ververst; dat is genoeg om te bedienen, niet voor vloeiende animaties.
 - Stroom, spanning en temperatuur van de baan geeft de ECoS niet door via het netwerk. Het statuspaneel toont daarom wat wel echt is: of er spanning op de baan staat, hoeveel locs rijden en de reactietijd van de verbinding.
 
 ## Schermafbeeldingen (demo-modus)
@@ -141,3 +144,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 | Bibliotheek | Centrales | Rijden (staand) |
 | --- | --- | --- |
 | ![Bibliotheek](docs/screenshots/bibliotheek.png) | ![Centrales](docs/screenshots/centrales.png) | ![Rijden staand](docs/screenshots/rijden-staand.png) |
+
+| ECoS live (VNC, demo) | Licht thema: Rijden | Licht thema: Duo |
+| --- | --- | --- |
+| ![VNC](docs/screenshots/ecos-vnc.png) | ![Licht Rijden](docs/screenshots/licht-rijden.png) | ![Licht Duo](docs/screenshots/licht-duo.png) |

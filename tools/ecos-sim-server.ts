@@ -3,6 +3,7 @@
 // kunt testen zonder echte centrale. Gebruik: npm run sim
 import net from 'node:net';
 import { EcosSimulator } from '../src/ecos/simulator';
+import { sharedSimScreen, VncSimSession } from '../src/vnc/sim';
 
 export function startSimServer(port: number, sim = new EcosSimulator(), log = true) {
   const server = net.createServer((socket: net.Socket) => {
@@ -31,8 +32,23 @@ export function startSimServer(port: number, sim = new EcosSimulator(), log = tr
   return server;
 }
 
+/** Nep-VNC-server (het ECoS-scherm) op poort 5900, optioneel met wachtwoord. */
+export function startVncSimServer(port: number, password = '', log = true) {
+  const server = net.createServer((socket: net.Socket) => {
+    if (log) console.log(`+ VNC van ${socket.remoteAddress}`);
+    const session = new VncSimSession(sharedSimScreen(), (d) => socket.write(d), password);
+    socket.on('data', (d: Buffer) => session.handle(new Uint8Array(d)));
+    socket.on('close', () => session.close());
+    socket.on('error', () => {});
+  });
+  server.listen(port);
+  return server;
+}
+
 if (process.argv[1] && /ecos-sim-server/.test(process.argv[1])) {
   const port = Number(process.env.PORT ?? 15471);
   startSimServer(port);
-  console.log(`ECoS-simulator luistert op poort ${port}`);
+  const vncPort = Number(process.env.VNC_PORT ?? 5900);
+  startVncSimServer(vncPort, process.env.VNC_PASSWORD ?? '');
+  console.log(`ECoS-simulator luistert op poort ${port}, VNC op poort ${vncPort}`);
 }

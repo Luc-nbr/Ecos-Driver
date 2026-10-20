@@ -7,7 +7,7 @@ import { createLoco, LocoForm, updateLoco } from '../store/actions';
 import { showToast } from '../store/ecos';
 import { useLoco, useLocoMeta } from '../store/hooks';
 import type { FuncOverride, LocoMeta } from '../store/settings';
-import { C, F, R } from '../theme';
+import { C, F, R, themed } from '../theme';
 import { Icon } from './Icon';
 import { LocoPhoto } from './Loco';
 import { Button, Toggle } from './ui';
@@ -34,7 +34,7 @@ function Field({ label, children, hint }: { label: string; children: React.React
   );
 }
 
-const inputStyle = {
+const inputStyle = themed(() => ({
   backgroundColor: C.bgDeep,
   borderRadius: R.md,
   borderWidth: 1,
@@ -43,7 +43,7 @@ const inputStyle = {
   fontSize: 18,
   paddingHorizontal: 14,
   height: 52,
-} as const;
+} as const));
 
 function Chips({ options, value, onChange, labels }: { options: readonly string[]; value: string; onChange: (v: string) => void; labels?: Record<string, string> }) {
   return (
@@ -162,20 +162,20 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
             </View>
             <View style={{ flex: 1, minWidth: 300, gap: 18 }}>
               <Field label="Naam (op de ECoS)">
-                <TextInput value={name} onChangeText={setName} placeholder="bijv. NS 1774" placeholderTextColor={C.muted} style={inputStyle} accessibilityLabel="Naam" maxLength={40} />
+                <TextInput value={name} onChangeText={setName} placeholder="bijv. NS 1774" placeholderTextColor={C.muted} style={inputStyle()} accessibilityLabel="Naam" maxLength={40} />
               </Field>
               <Field label="Digitaal adres" hint={addrOk ? undefined : `Kies een adres van ${protocol.startsWith('SX') ? 0 : 1} t/m ${maxAddr(protocol)}`}>
                 <TextInput
                   value={addr}
                   onChangeText={(t) => setAddr(t.replace(/[^0-9]/g, ''))}
                   keyboardType="number-pad"
-                  style={[inputStyle, !addrOk ? { borderColor: C.red } : null]}
+                  style={[inputStyle(), !addrOk ? { borderColor: C.red } : null]}
                   accessibilityLabel="Adres"
                   maxLength={5}
                 />
               </Field>
               <Field label="Omschrijving" hint="Bijv. ‘BR 1700’ of ‘TRAXX’">
-                <TextInput value={m.subtitle ?? ''} onChangeText={(t) => setM((x) => ({ ...x, subtitle: t }))} style={inputStyle} accessibilityLabel="Omschrijving" />
+                <TextInput value={m.subtitle ?? ''} onChangeText={(t) => setM((x) => ({ ...x, subtitle: t }))} style={inputStyle()} accessibilityLabel="Omschrijving" />
               </Field>
             </View>
           </View>
@@ -193,7 +193,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
               keyboardType="number-pad"
               placeholder={String(loco?.speedIndicator || 160)}
               placeholderTextColor={C.muted}
-              style={[inputStyle, { maxWidth: 200 }]}
+              style={[inputStyle(), { maxWidth: 200 }]}
               accessibilityLabel="Topsnelheid"
               maxLength={3}
             />
@@ -230,7 +230,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
                         onChangeText={(t) => setFn(n, { label: t || undefined })}
                         placeholder={base.label}
                         placeholderTextColor={C.muted}
-                        style={inputStyle}
+                        style={inputStyle()}
                         accessibilityLabel={`Naam F${n}`}
                       />
                       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>

@@ -1,7 +1,5 @@
-// Virtuele ECoS: het bedieningspaneel van de ECoS 50210 nagebouwd, met twee
-// draaiknoppen, STOP/GO en het aanraakscherm (locs en wissels).
-// De ECoS kan zijn echte scherm niet over het netwerk delen, daarom bouwt de
-// app het na met de live gegevens uit de centrale.
+// ECoS-scherm: live via VNC (het echte scherm van de ECoS), of een nagebouwd
+// bedienpaneel met twee draaiwielen, STOP/GO en een aanraakscherm voor locs en wissels.
 import React, { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { NotConnected } from '../components/Chrome';
@@ -13,6 +11,9 @@ import { emergencyStop, setDirection, setFunction, setPower, setSlot, setSpeed, 
 import { useEcos } from '../store/ecos';
 import { FunctionView, kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
 import { C, F } from '../theme';
+import { Segmented } from '../components/ui';
+import { VncView } from '../components/VncView';
+import { useSettings } from '../store/settings';
 
 const S = {
   chassis: '#1C1C1E',
@@ -233,7 +234,9 @@ export default function EcosCloneScreen() {
   const locos = useEcos((s) => s.locos);
   const [tab, setTab] = useState<'locs' | 'wissels'>('locs');
   const [picker, setPicker] = useState<number | null>(null);
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
+  const view = useSettings((x) => x.ecosView) ?? 'vnc';
+  const setView = (v: 'vnc' | 'replica') => useSettings.getState().set({ ecosView: v });
   if (conn !== 'connected') return <NotConnected />;
   const left = slots[0] != null && locos[slots[0]] ? slots[0] : null;
   const right = slots[1] != null && locos[slots[1]] ? slots[1] : null;
@@ -242,6 +245,21 @@ export default function EcosCloneScreen() {
 
   return (
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+      <View style={{ maxWidth: 520 }}>
+        <Segmented
+          label="Weergave ECoS-scherm"
+          value={view}
+          onChange={(v) => setView(v)}
+          options={[
+            { value: 'vnc', label: 'Live scherm (VNC)', icon: 'device' },
+            { value: 'replica', label: 'Nagebouwd', icon: 'grid' },
+          ]}
+        />
+      </View>
+      {view === 'vnc' ? (
+        <VncView maxHeight={Math.max(260, height - 300)} />
+      ) : (
+        <>
       <View style={{ backgroundColor: S.chassis, borderRadius: 34, borderWidth: 6, borderColor: S.chassisEdge, padding: 18, gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <HwButton label="STOP" color="#C8231F" active={!go} onPress={emergencyStop} />
@@ -298,7 +316,7 @@ export default function EcosCloneScreen() {
       </View>
       <Text style={{ color: C.muted, fontSize: 15, lineHeight: 21 }}>
         Dit is een nagebouwd ECoS-bedienpaneel met live gegevens uit je centrale. Draai aan de knoppen om te rijden en tik op het scherm voor functies en wissels.
-        De linker en rechter loc zijn dezelfde als in Duo. Het echte ECoS-scherm via VNC tonen zit er nog niet in.
+        De linker en rechter loc zijn dezelfde als in Duo. Het echte ECoS-scherm zie je bij Live scherm (VNC).
       </Text>
       <LocoPicker
         visible={picker !== null}
@@ -309,6 +327,8 @@ export default function EcosCloneScreen() {
           setPicker(null);
         }}
       />
+        </>
+      )}
     </ScrollView>
   );
 }

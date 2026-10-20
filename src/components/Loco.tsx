@@ -20,16 +20,16 @@ export function LocoPhoto({ uri, style, rounded = R.md, hint = false }: { uri?: 
   return (
     <View style={[{ overflow: 'hidden', borderRadius: rounded, backgroundColor: C.panel2, alignItems: 'center', justifyContent: 'center' }, style]}>
       <Svg width="62%" height="56%" viewBox="0 0 240 110" preserveAspectRatio="xMidYMid meet">
-        <Path d="M60 26 L84 6 M84 6 L108 26 M150 26 L174 6 M174 6 L198 26 M70 6 H190" stroke="#5A5A5F" strokeWidth={3} fill="none" />
-        <Path d="M16 84 V40 Q16 28 28 28 H206 Q222 28 230 46 L234 84 Z" fill="#48484A" />
+        <Path d="M60 26 L84 6 M84 6 L108 26 M150 26 L174 6 M174 6 L198 26 M70 6 H190" stroke={C.photoLine} strokeWidth={3} fill="none" />
+        <Path d="M16 84 V40 Q16 28 28 28 H206 Q222 28 230 46 L234 84 Z" fill={C.photoBody} />
         <Rect x={16} y={62} width={216} height={6} fill={C.accent} opacity={0.85} />
-        <Rect x={196} y={36} width={24} height={18} rx={3} fill="#1C1C1E" />
+        <Rect x={196} y={36} width={24} height={18} rx={3} fill={C.photoWin} />
         {[34, 70, 106].map((x) => (
-          <Rect key={x} x={x} y={36} width={26} height={16} rx={3} fill="#1C1C1E" opacity={0.8} />
+          <Rect key={x} x={x} y={36} width={26} height={16} rx={3} fill={C.photoWin} opacity={0.8} />
         ))}
-        <Rect x={10} y={84} width={228} height={6} fill="#3A3A3C" />
+        <Rect x={10} y={84} width={228} height={6} fill={C.photoBase} />
         {[44, 74, 170, 200].map((x) => (
-          <Circle key={x} cx={x} cy={96} r={9} fill="#3A3A3C" stroke="#5A5A5F" strokeWidth={2} />
+          <Circle key={x} cx={x} cy={96} r={9} fill={C.photoBase} stroke={C.photoLine} strokeWidth={2} />
         ))}
       </Svg>
       {hint ? <Text style={{ position: 'absolute', bottom: 8, right: 12, color: C.muted, fontSize: 12 }}>Foto toevoegen in Bibliotheek</Text> : null}

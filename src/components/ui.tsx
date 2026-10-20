@@ -1,19 +1,19 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle } from 'react-native';
-import { C, F, R } from '../theme';
+import { C, F, R, themed } from '../theme';
 import { Icon, IconName } from './Icon';
 
 /** Kaart in Apple-stijl: grafiet vlak, ruime afronding, haarlijn-rand. */
 export function Panel({ children, style }: { children?: React.ReactNode; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.panel, style]}>{children}</View>;
+  return <View style={[styles().panel, style]}>{children}</View>;
 }
 
 export function SectionTitle({ icon, title, right }: { icon?: IconName; title: string; right?: React.ReactNode }) {
   return (
-    <View style={styles.sectionRow}>
+    <View style={styles().sectionRow}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
         {icon ? <Icon name={icon} size={20} color={C.muted} /> : null}
-        <Text style={styles.sectionTitle} numberOfLines={1}>
+        <Text style={styles().sectionTitle} numberOfLines={1}>
           {title}
         </Text>
       </View>
@@ -32,9 +32,9 @@ export function Toggle({ value, onChange, disabled, label }: { value: boolean; o
       disabled={disabled}
       onPress={() => onChange?.(!value)}
       hitSlop={8}
-      style={[styles.toggle, value ? styles.toggleOn : null, disabled ? { opacity: 0.5 } : null]}
+      style={[styles().toggle, value ? styles().toggleOn : null, disabled ? { opacity: 0.5 } : null]}
     >
-      <View style={[styles.toggleKnob, value ? { alignSelf: 'flex-end' } : null]} />
+      <View style={[styles().toggleKnob, value ? { alignSelf: 'flex-end' } : null]} />
     </Pressable>
   );
 }
@@ -70,7 +70,7 @@ export function Button({
       onPress={onPress}
       disabled={disabled || loading}
       style={({ pressed }) => [
-        styles.btn,
+        styles().btn,
         small ? { minHeight: 44, paddingHorizontal: 14, borderRadius: 12 } : null,
         { backgroundColor: bg },
         pressed ? { opacity: 0.75 } : null,
@@ -79,7 +79,7 @@ export function Button({
       ]}
     >
       {loading ? <ActivityIndicator color={fg} /> : icon ? <Icon name={icon} size={small ? 18 : 20} color={fg} strokeWidth={2.2} /> : null}
-      <Text style={[styles.btnText, { color: fg }, small ? { fontSize: 15 } : null, textStyle]}>{title}</Text>
+      <Text style={[styles().btnText, { color: fg }, small ? { fontSize: 15 } : null, textStyle]}>{title}</Text>
     </Pressable>
   );
 }
@@ -117,7 +117,7 @@ export function IconButton({
 
 export function Pill({ text, color = C.green, dot = true }: { text: string; color?: string; dot?: boolean }) {
   return (
-    <View style={styles.pill}>
+    <View style={styles().pill}>
       {dot ? <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} /> : null}
       <Text style={{ color: C.textSoft, fontSize: 14, fontWeight: F.semi }}>{text}</Text>
     </View>
@@ -139,7 +139,7 @@ export function Segmented<T extends string>({
   big?: boolean;
 }) {
   return (
-    <View accessibilityRole="radiogroup" accessibilityLabel={label} style={[styles.segTrack, big ? { borderRadius: 14, padding: 3 } : null]}>
+    <View accessibilityRole="radiogroup" accessibilityLabel={label} style={[styles().segTrack, big ? { borderRadius: 14, padding: 3 } : null]}>
       {options.map((o) => {
         const on = o.value === value;
         return (
@@ -150,7 +150,7 @@ export function Segmented<T extends string>({
             aria-checked={on}
             accessibilityLabel={o.label || o.value}
             onPress={() => onChange(o.value)}
-            style={[styles.seg, big ? { minHeight: 52, borderRadius: 11 } : null, on ? styles.segOn : null]}
+            style={[styles().seg, big ? { minHeight: 52, borderRadius: 11 } : null, on ? styles().segOn : null]}
           >
             {o.icon ? <Icon name={o.icon} size={big ? 20 : 17} color={on ? C.text : C.muted} strokeWidth={2.4} /> : null}
             {o.label ? <Text style={{ color: on ? C.text : C.muted, fontSize: big ? 16 : 14, fontWeight: on ? F.semi : F.medium }}>{o.label}</Text> : null}
@@ -161,7 +161,7 @@ export function Segmented<T extends string>({
   );
 }
 
-export const styles = StyleSheet.create({
+export const styles = themed(() => StyleSheet.create({
   panel: {
     backgroundColor: C.panel,
     borderRadius: R.lg,
@@ -171,13 +171,13 @@ export const styles = StyleSheet.create({
   },
   sectionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, gap: 12 },
   sectionTitle: { color: C.text, fontSize: 20, fontWeight: F.bold, letterSpacing: 0.2 },
-  toggle: { width: 51, height: 31, borderRadius: 16, padding: 2, backgroundColor: '#39393D', justifyContent: 'center' },
+  toggle: { width: 51, height: 31, borderRadius: 16, padding: 2, backgroundColor: C.toggleOff, justifyContent: 'center' },
   toggleOn: { backgroundColor: C.accent },
   toggleKnob: { width: 27, height: 27, borderRadius: 14, backgroundColor: '#FFFFFF' },
   btn: { minHeight: 50, paddingHorizontal: 18, borderRadius: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   btnText: { fontSize: 17, fontWeight: F.semi },
   pill: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingHorizontal: 12, height: 32, borderRadius: 16, backgroundColor: C.panel2 },
-  segTrack: { flexDirection: 'row', backgroundColor: '#1F1F22', borderRadius: 10, padding: 2, gap: 2, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
+  segTrack: { flexDirection: 'row', backgroundColor: C.segTrack, borderRadius: 10, padding: 2, gap: 2, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
   seg: { flex: 1, minHeight: 40, borderRadius: 8, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, paddingHorizontal: 8 },
-  segOn: { backgroundColor: '#636366' },
-});
+  segOn: { backgroundColor: C.segOn, shadowColor: '#000', shadowOpacity: 0.12, shadowRadius: 3, shadowOffset: { width: 0, height: 1 } },
+}));

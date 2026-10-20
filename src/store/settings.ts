@@ -22,6 +22,7 @@ export interface LocoMeta {
 }
 
 export type ConnMode = 'tcp' | 'demo';
+export type ThemePref = 'auto' | 'light' | 'dark';
 
 /** Een ECoS-centrale (bijv. thuisbaan of clubbaan). */
 export interface Profile {
@@ -29,6 +30,9 @@ export interface Profile {
   name: string;
   host: string;
   port: number;
+  /** VNC voor het live ECoS-scherm (standaard 5900, wachtwoord optioneel). */
+  vncPort?: number;
+  vncPassword?: string;
 }
 
 interface SettingsState {
@@ -37,6 +41,9 @@ interface SettingsState {
   autoConnect: boolean;
   lastMode: ConnMode | null;
   keepAwake: boolean;
+  theme: ThemePref;
+  /** ECoS-scherm: live via VNC of nagebouwd. */
+  ecosView: 'vnc' | 'replica';
   /** sleutel: `${mode}:${locId}` */
   meta: Record<string, LocoMeta>;
   current: Record<ConnMode, number | null>;
@@ -59,6 +66,8 @@ export const useSettings = create<SettingsState>()(
       autoConnect: true,
       lastMode: null,
       keepAwake: true,
+      theme: 'auto',
+      ecosView: 'vnc',
       meta: {},
       current: { tcp: null, demo: null },
       duo: { tcp: [null, null], demo: [null, null] },

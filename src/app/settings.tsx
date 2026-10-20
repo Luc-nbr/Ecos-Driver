@@ -1,6 +1,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Toggle } from '../components/ui';
+import { Segmented, Toggle } from '../components/ui';
 import { useEcos } from '../store/ecos';
 import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
@@ -38,6 +38,21 @@ export default function SettingsScreen() {
   const connected = useEcos((x) => x.conn === 'connected');
   return (
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 22, maxWidth: 820 }}>
+      <Group title="Weergave" footer="Automatisch volgt de instelling van je iPad (licht of donker).">
+        <View style={{ padding: 12 }}>
+          <Segmented
+            label="Thema"
+            value={s.theme ?? 'auto'}
+            onChange={(v) => s.set({ theme: v })}
+            options={[
+              { value: 'auto', label: 'Automatisch' },
+              { value: 'light', label: 'Licht', icon: 'light' },
+              { value: 'dark', label: 'Donker', icon: 'dot' },
+            ]}
+          />
+        </View>
+      </Group>
+
       <Group title="Algemeen">
         <Row title="Automatisch verbinden" sub="Bij openen verbinden met de laatst gebruikte centrale (of demo)">
           <Toggle value={s.autoConnect} onChange={(v) => s.set({ autoConnect: v })} label="Automatisch verbinden" />

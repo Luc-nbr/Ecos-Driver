@@ -177,7 +177,7 @@ export function ToastHost() {
             paddingHorizontal: 18,
             paddingVertical: 12,
             borderRadius: 22,
-            backgroundColor: '#2C2C2E',
+            backgroundColor: C.panel,
             borderWidth: StyleSheet.hairlineWidth,
             borderColor: toast.kind === 'error' ? C.red : C.border,
             flexDirection: 'row',

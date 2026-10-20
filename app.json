@@ -6,7 +6,7 @@
     "scheme": "ecosdriver",
     "orientation": "default",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "automatic",
     "backgroundColor": "#071A44",
     "splash": {
       "image": "./assets/splash-icon.png",

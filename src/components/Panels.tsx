@@ -49,8 +49,8 @@ function TurnoutGlyph({ state, route }: { state: number; route: boolean }) {
   if (route) return <Icon name="route" size={26} color={C.accent} />;
   return (
     <Svg width={34} height={24} viewBox="0 0 56 40">
-      <Path d="M4 32 H52" stroke={state === 0 ? C.accent : '#5A5A5F'} strokeWidth={5} strokeLinecap="round" fill="none" />
-      <Path d="M4 32 C24 32 32 10 52 6" stroke={state !== 0 ? C.accent : '#5A5A5F'} strokeWidth={5} strokeLinecap="round" fill="none" />
+      <Path d="M4 32 H52" stroke={state === 0 ? C.accent : C.inactiveLine} strokeWidth={5} strokeLinecap="round" fill="none" />
+      <Path d="M4 32 C24 32 32 10 52 6" stroke={state !== 0 ? C.accent : C.inactiveLine} strokeWidth={5} strokeLinecap="round" fill="none" />
     </Svg>
   );
 }

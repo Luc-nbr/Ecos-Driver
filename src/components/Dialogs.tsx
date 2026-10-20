@@ -12,7 +12,7 @@ import { Button, Segmented } from './ui';
 export function Sheet({ visible, onClose, children, maxWidth = 640 }: { visible: boolean; onClose: () => void; children: React.ReactNode; maxWidth?: number }) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityLabel="Sluiten" onPress={onClose} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <Pressable accessibilityLabel="Sluiten" onPress={onClose} style={{ flex: 1, backgroundColor: C.backdrop, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Pressable
           onPress={() => {}}
           style={[
