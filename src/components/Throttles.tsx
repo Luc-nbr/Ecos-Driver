@@ -1,15 +1,14 @@
 // Rijregelaars voor de duo- en multi-weergave.
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { setSlot, setSpeed, stopLoco } from '../store/actions';
+import { setSlot, setSpeed } from '../store/actions';
 import { useEcos } from '../store/ecos';
-import { kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
+import { useFunctions, useLoco, useLocoMeta, useSlots } from '../store/hooks';
 import { C, F, R, themed } from '../theme';
+import { CabButtons, CabControl, cabSubtitle, FunctionList, fromStep, protocolSteps, SpeedGauge, StepBar, ThumbWheel, toStep } from './Cab';
 import { LocoPicker, Sheet } from './Dialogs';
 import { Icon } from './Icon';
-import { JogWheel } from './JogWheel';
-import { DirectionButtons, FunctionTile, LocoPhoto, LocoSwitchButton } from './Loco';
-import { BrakePanel } from './Panels';
+import { FunctionTile, LocoPhoto, LocoSwitchButton } from './Loco';
 
 /** Venster met alle functies van een loc als tegels. */
 export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: boolean; onClose: () => void }) {
@@ -24,12 +23,8 @@ export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: 
           <Icon name="close" size={16} color={C.muted} strokeWidth={2.6} />
         </Pressable>
       </View>
-      <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-        {funcs.map((f) => (
-          <View key={f.n} style={{ width: 128 }}>
-            <FunctionTile id={id} f={f} />
-          </View>
-        ))}
+      <ScrollView>
+        {id != null ? <FunctionList id={id} funcs={funcs} /> : null}
       </ScrollView>
     </Sheet>
   );
@@ -74,9 +69,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
   const loco = useLoco(id);
   const meta = useLocoMeta(id);
   const funcs = useFunctions(loco, meta);
-  const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   const [picker, setPicker] = useState(false);
-  const [sheet, setSheet] = useState(false);
   const label = `Loc ${slot + 1}`;
 
   const picked = (
@@ -101,59 +94,16 @@ export function DuoThrottle({ slot }: { slot: number }) {
     );
   }
 
-  const vmax = vmaxOf(loco, meta);
   return (
-    <View style={[card(), { flex: 1, padding: 18, gap: 16 }]}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <LocoPhoto ecosId={id} uri={meta.photo} style={{ width: 96, height: 58 }} rounded={12} />
-        <View style={{ flex: 1, minWidth: 0 }}>
-          <Text style={{ color: C.muted, fontSize: 13, fontWeight: F.semi }}>{label.toUpperCase()}</Text>
-          <Text style={{ color: C.text, fontSize: 21, fontWeight: F.bold }} numberOfLines={1}>
-            {loco.name}
-          </Text>
-          <Text style={{ color: C.muted, fontSize: 14 }} numberOfLines={1}>
-            {[`${loco.protocol.startsWith('DCC') ? 'DCC' : loco.protocol} ${loco.addr}`, meta.subtitle].filter(Boolean).join(' · ')}
-          </Text>
-        </View>
-        <LocoSwitchButton onPress={() => setPicker(true)} />
-      </View>
-
-      <View style={{ alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-          <Text style={{ color: C.text, fontSize: 56, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
-          <Text style={{ color: C.muted, fontSize: 18, fontWeight: F.medium }}>km/h</Text>
-        </View>
-        <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={250} maxLabel={vmax} disabled={neutral} label={`Snelheid ${loco.name}`} />
-      </View>
-
-      <DirectionButtons id={id} dir={loco.dir} />
-      <BrakePanel id={id} />
-
-      <View style={{ gap: 8 }}>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {funcs.slice(0, 4).map((f) => (
-            <FunctionTile key={f.n} id={id} f={f} />
-          ))}
-        </View>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {funcs.slice(4, 8).map((f) => (
-            <FunctionTile key={f.n} id={id} f={f} />
-          ))}
-        </View>
-        {funcs.length > 8 ? (
-          <Pressable accessibilityRole="button" onPress={() => setSheet(true)} style={({ pressed }) => [{ height: 44, alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.6 } : null]}>
-            <Text style={{ color: C.accent, fontSize: 16, fontWeight: F.semi }}>Alle functies (F0–F{funcs[funcs.length - 1].n})</Text>
-          </Pressable>
-        ) : null}
-      </View>
+    <View style={{ flex: 1 }}>
+      <CabControl id={id} loco={loco} meta={meta} funcs={funcs} onSwitch={() => setPicker(true)} slotLabel={label} maxGauge={250} />
       {picked}
-      <FunctionsSheet id={id} visible={sheet} onClose={() => setSheet(false)} />
     </View>
   );
 }
 
 /** Compacte regelaar voor de multi-weergave (2 rijen van 5). */
-export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number; dense?: boolean; wheelSize?: number }) {
+export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean }) {
   const slotIds = useSlotIds('multi');
   const id = slotIds[slot];
   const loco = useLoco(id);
@@ -162,6 +112,8 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
   const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   const [picker, setPicker] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const [w, setW] = useState(0);
+  const [rowH, setRowH] = useState(0);
 
   const picked = (
     <LocoPicker
@@ -184,25 +136,38 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
       </View>
     );
   }
-  const vmax = vmaxOf(loco, meta);
+  const steps = protocolSteps(loco.protocol);
+  const step = toStep(loco.speed, steps);
+  const inner = Math.max(0, w - 20);
+  const wheelW = 40;
+  const gauge = Math.max(96, Math.min(dense ? 150 : 170, inner - wheelW - 8));
+  const btnW = Math.floor((inner - 12) / 3);
   return (
-    <View style={[card(), { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.accent } : null]}>
+    <View style={[card(), { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.blue } : null]} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <Text style={{ color: C.muted, fontSize: 12, fontWeight: F.bold, width: 16 }}>{slot + 1}</Text>
-        <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi, flex: 1 }} numberOfLines={1}>
-          {loco.name}
-        </Text>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi }} numberOfLines={1}>
+            {loco.name}
+          </Text>
+          <Text style={{ color: C.muted, fontSize: 11 }} numberOfLines={1}>
+            {cabSubtitle(loco, meta)}
+          </Text>
+        </View>
         <LocoSwitchButton compact onPress={() => setPicker(true)} label={`Plek ${slot + 1}: wissel loc`} />
       </View>
       {!dense ? <LocoPhoto ecosId={id} uri={meta.photo} style={{ height: 56 }} rounded={10} /> : null}
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
-        <Text style={{ color: C.text, fontSize: 30, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
-        <Text style={{ color: C.muted, fontSize: 13 }}>km/h</Text>
-      </View>
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wheelSize} showScale={false} label={`Snelheid ${loco.name}`} disabled={neutral} />
-      </View>
-      <DirectionButtons id={id} dir={loco.dir} compact />
+      <StepBar id={id} loco={loco} steps={steps} height={18} />
+      {w > 0 ? (
+        <>
+          <View onLayout={(e) => setRowH(e.nativeEvent.layout.height)} style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <SpeedGauge step={step} steps={steps} size={gauge} />
+            {/* het duimwiel mag de hele hoogte gebruiken: langer wiel = fijner gas geven */}
+            <ThumbWheel step={step} steps={steps} onChange={(s) => setSpeed(id, fromStep(s, steps))} width={wheelW} height={Math.round(Math.max(gauge, Math.min(300, rowH - 4)))} disabled={neutral} label={`Snelheid ${loco.name}`} />
+          </View>
+          <CabButtons id={id} loco={loco} steps={steps} layout="compact" w={btnW} h={40} />
+        </>
+      ) : null}
       <View style={{ flexDirection: 'row', gap: 6 }}>
         {funcs.slice(0, 3).map((f) => (
           <FunctionTile key={f.n} id={id} f={f} size="sm" />
@@ -216,14 +181,6 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
           <Icon name="more" size={20} color={C.text} strokeWidth={3} />
         </Pressable>
       </View>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${loco.name} stoppen`}
-        onPress={() => stopLoco(id)}
-        style={({ pressed }) => [{ height: 40, borderRadius: 12, backgroundColor: C.redSoft, alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
-      >
-        <Text style={{ color: C.red, fontSize: 15, fontWeight: F.bold }}>Stop</Text>
-      </Pressable>
       {picked}
       <FunctionsSheet id={id} visible={sheet} onClose={() => setSheet(false)} />
     </View>

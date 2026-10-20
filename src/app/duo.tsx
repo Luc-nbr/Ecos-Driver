@@ -11,7 +11,7 @@ export default function DuoScreen() {
   if (conn !== 'connected') return <NotConnected />;
   return (
     <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}>
-      <View style={{ flexDirection: 'row', gap: 16 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 16 }}>
         <DuoThrottle slot={0} />
         <DuoThrottle slot={1} />
       </View>

@@ -1,29 +1,12 @@
-// Panelen die op meerdere schermen terugkomen: rem, tellers, wissels en rijwegen.
+// Panelen die op meerdere schermen terugkomen: tellers, wissels en rijwegen.
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { setBrake, switchAccessory } from '../store/actions';
+import { switchAccessory } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { C, F, R } from '../theme';
 import { Icon, IconName } from './Icon';
-import { Slider } from './Slider';
 import { Panel, SectionTitle } from './ui';
-
-export function BrakePanel({ id }: { id: number; compact?: boolean }) {
-  const brake = useEcos((s) => s.brake[id] ?? 0);
-  return (
-    <View style={{ gap: 2 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Icon name="brake" size={18} color={C.muted} />
-          <Text style={{ color: C.textSoft, fontSize: 15, fontWeight: F.semi }}>Rem</Text>
-        </View>
-        <Text style={{ color: brake ? C.red : C.muted, fontSize: 15, fontWeight: F.semi, fontVariant: ['tabular-nums'] }}>{brake === 0 ? 'Uit' : `${brake}%`}</Text>
-      </View>
-      <Slider value={brake} max={100} onChange={(v) => setBrake(id, v)} fill={C.red} thickness={6} label="Rem" />
-    </View>
-  );
-}
 
 /** Klein telvak zoals bovenaan ECoS CAB, maar rustiger. */
 export function StatTile({ value, label, icon, color = C.text, onPress }: { value: string; label: string; icon: IconName; color?: string; onPress?: () => void }) {

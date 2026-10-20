@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleProp, Text, View, ViewStyle } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
-import { setDirection, setFunction, setNeutral, toggleFunction } from '../store/actions';
+import { setFunction, toggleFunction } from '../store/actions';
 import type { LocoDesc } from '../ecos/client';
 import { useEcos } from '../store/ecos';
 import { useActiveProfile } from '../store/settings';
 import type { FunctionView } from '../store/hooks';
 import { C, F, R } from '../theme';
 import { Icon } from './Icon';
-import { Segmented } from './ui';
 
 // Afbeeldingen die niet te laden waren, niet steeds opnieuw proberen.
 const failedImages = new Set<string>();
@@ -88,25 +87,6 @@ export function LocoPhoto({
   );
 }
 
-/** Vooruit / Neutraal / Achteruit als gesegmenteerde knop. */
-export function DirectionButtons({ id, dir, compact }: { id: number; dir: 0 | 1; compact?: boolean }) {
-  const neutral = useEcos((s) => !!s.neutral[id]);
-  const value = neutral ? 'n' : dir === 0 ? 'f' : 'r';
-  return (
-    <Segmented
-      label="Rijrichting"
-      big={!compact}
-      value={value}
-      onChange={(v) => (v === 'n' ? setNeutral(id) : setDirection(id, v === 'f' ? 0 : 1))}
-      options={[
-        { value: 'f', label: compact ? '' : 'Vooruit', icon: 'arrowUp' },
-        { value: 'n', label: compact ? '' : 'Neutraal', icon: 'neutral' },
-        { value: 'r', label: compact ? '' : 'Achteruit', icon: 'arrowDown' },
-      ]}
-    />
-  );
-}
-
 /** Knop "Wissel loc", in elk rijscherm. */
 export function LocoSwitchButton({ onPress, compact, label = 'Wissel loc' }: { onPress: () => void; compact?: boolean; label?: string }) {
   if (compact) {
@@ -149,47 +129,7 @@ function fnHandlers(id: number, f: FunctionView) {
   return { onPress: () => toggleFunction(id, f.n) };
 }
 
-/** Functie als drukknop met icoon (rijscherm). Amber = aan. */
-export function FunctionButton({ id, f }: { id: number; f: FunctionView }) {
-  const fg = f.on ? C.ink : C.text;
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ selected: f.on }}
-      aria-pressed={f.on}
-      accessibilityLabel={`F${f.n} ${f.label}${f.moment ? ', vasthouden' : ''}`}
-      {...fnHandlers(id, f)}
-      style={({ pressed }) => [
-        {
-          flexBasis: '30%',
-          flexGrow: 1,
-          maxWidth: '33%',
-          minHeight: 96,
-          padding: 10,
-          borderRadius: 16,
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 6,
-          backgroundColor: f.on ? C.accent : C.panel2,
-        },
-        pressed ? { transform: [{ scale: 0.96 }], opacity: 0.9 } : null,
-      ]}
-    >
-      <Text style={{ position: 'absolute', top: 8, left: 10, color: f.on ? C.ink : C.muted, fontSize: 13, fontWeight: F.bold }}>F{f.n}</Text>
-      {f.moment ? (
-        <View style={{ position: 'absolute', top: 8, right: 8 }}>
-          <Icon name="hand" size={14} color={f.on ? C.ink : C.muted} />
-        </View>
-      ) : null}
-      <Icon name={f.icon} size={30} color={fg} strokeWidth={1.9} />
-      <Text style={{ color: fg, fontSize: 13, fontWeight: F.medium, textAlign: 'center' }} numberOfLines={1}>
-        {f.label}
-      </Text>
-    </Pressable>
-  );
-}
-
-/** Kleine functietegel (duo, multi, alle functies). */
+/** Kleine functietegel (multi). */
 export function FunctionTile({ id, f, size = 'md' }: { id: number; f: FunctionView; size?: 'sm' | 'md' }) {
   const sm = size === 'sm';
   const fg = f.on ? C.ink : C.text;

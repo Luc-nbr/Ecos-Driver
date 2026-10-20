@@ -1,13 +1,10 @@
-import * as Haptics from 'expo-haptics';
-import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { PanResponder, Platform, Text, View } from 'react-native';
+import React, { useId } from 'react';
+import { Text, View } from 'react-native';
 import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
-import { useScrollLock } from '../store/ui';
 import { C, F } from '../theme';
+import { NO_SELECT, useGasScroll } from './useGasScroll';
 
 const MAX = 126;
-// op web: slepen met de muis mag geen tekst selecteren (dat breekt de veeg af)
-const NO_SELECT = (Platform.OS === 'web' ? { userSelect: 'none' } : {}) as object;
 const PX_PER_STEP = 3.2; // zoveel pixels scrollen = 1 rijstap (hele schaal ≈ 400 px)
 const DEG_PER_PX = 0.9; // zo ver draait het wiel zichtbaar mee per pixel
 const ARC_START = 135;
@@ -52,82 +49,9 @@ export function JogWheel({
   label?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const [rotation, setRotation] = useState(0);
-  const rot = useRef(0);
-  const acc = useRef(0);
-  const val = useRef(value);
-  const lastEmitted = useRef(value);
-  const atEnd = useRef(false);
-  const cb = useRef(onChange);
-  cb.current = onChange;
-  const dis = useRef(disabled);
-  dis.current = disabled;
-  const scrollLock = useScrollLock();
-  const releaseLock = useRef(scrollLock.release);
-  releaseLock.current = scrollLock.release;
   // kleinere wielen iets gevoeliger, zodat het hele bereik in één veeg past
-  const pxPerStep = useRef(PX_PER_STEP);
-  pxPerStep.current = size < 200 ? PX_PER_STEP * 0.8 : PX_PER_STEP;
-
-  // snelheid van buitenaf veranderd (stop, rem, ECoS)
-  useEffect(() => {
-    if (value === lastEmitted.current) return;
-    lastEmitted.current = value;
-    val.current = value;
-    acc.current = 0;
-  }, [value]);
-  useEffect(() => () => releaseLock.current(), []);
-
-  /** Scroll d pixels (positief = meer gas). */
-  const scroll = (d: number) => {
-    if (dis.current || d === 0) return;
-    const v = val.current;
-    if ((v >= MAX && d > 0) || (v <= 0 && d < 0)) {
-      // aan het eind: niets meer doen, en niets opsparen
-      acc.current = 0;
-      if (!atEnd.current && Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
-      atEnd.current = true;
-      return;
-    }
-    atEnd.current = false;
-    rot.current += d * DEG_PER_PX;
-    setRotation(rot.current);
-    acc.current += d / pxPerStep.current;
-    const steps = acc.current > 0 ? Math.floor(acc.current) : Math.ceil(acc.current);
-    if (steps === 0) return;
-    acc.current -= steps;
-    const next = Math.max(0, Math.min(MAX, v + steps));
-    if (next === v) return;
-    if (Platform.OS !== 'web' && Math.floor(next / 6) !== Math.floor(v / 6)) Haptics.selectionAsync().catch(() => {});
-    val.current = next;
-    lastEmitted.current = next;
-    cb.current(next);
-  };
-
-  const responder = useMemo(() => {
-    let last = { x: 0, y: 0 };
-    return PanResponder.create({
-      onStartShouldSetPanResponder: () => !dis.current,
-      onStartShouldSetPanResponderCapture: () => !dis.current,
-      onMoveShouldSetPanResponder: () => !dis.current,
-      onMoveShouldSetPanResponderCapture: () => !dis.current,
-      onPanResponderTerminationRequest: () => false,
-      onShouldBlockNativeResponder: () => true,
-      onPanResponderGrant: () => {
-        last = { x: 0, y: 0 };
-        atEnd.current = false;
-      },
-      onPanResponderMove: (_, g) => {
-        // omhoog en naar rechts tellen allebei als "meer gas"
-        const d = g.dx - last.x - (g.dy - last.y);
-        last = { x: g.dx, y: g.dy };
-        scroll(d);
-      },
-      onPanResponderRelease: () => releaseLock.current(),
-      onPanResponderTerminate: () => releaseLock.current(),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { offset, handlers } = useGasScroll({ value, max: MAX, onChange, disabled, pxPerStep: size < 200 ? PX_PER_STEP * 0.8 : PX_PER_STEP });
+  const rotation = offset * DEG_PER_PX;
 
   const cx = size / 2;
   const cy = size / 2;
@@ -143,10 +67,7 @@ export function JogWheel({
 
   return (
     <View
-      {...responder.panHandlers}
-      onTouchStart={scrollLock.onTouchStart}
-      onTouchEnd={scrollLock.onTouchEnd}
-      onTouchCancel={scrollLock.onTouchCancel}
+      {...handlers}
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel={`${label}: scroll omhoog voor meer gas`}

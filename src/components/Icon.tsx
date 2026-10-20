@@ -57,6 +57,8 @@ const PATHS: Record<string, string[]> = {
   chevronUp: ['M6 15l6-6 6 6'],
   arrowUp: ['M12 20V5', 'M6 11l6-6 6 6'],
   arrowDown: ['M12 4v15', 'M6 13l6 6 6-6'],
+  arrowLeft: ['M20 12H5', 'M11 6l-6 6 6 6'],
+  arrowRight: ['M4 12h15', 'M13 6l6 6-6 6'],
   neutral: ['M12 12m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0'],
   search: ['M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z', 'M20 20l-4-4'],
   link: ['M10 14a4 4 0 0 0 6 0l3-3a4 4 0 0 0-6-6l-1 1', 'M14 10a4 4 0 0 0-6 0l-3 3a4 4 0 0 0 6 6l1-1'],
