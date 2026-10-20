@@ -153,7 +153,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
         <ScrollView contentContainerStyle={{ padding: 22, gap: 22, paddingBottom: 60 }} keyboardShouldPersistTaps="handled">
           <View style={{ flexDirection: 'row', gap: 20, flexWrap: 'wrap' }}>
             <View style={{ flex: 1, minWidth: 300, gap: 10 }}>
-              <LocoPhoto uri={m.photo} style={{ height: 220 }} />
+              <LocoPhoto ecosId={id} uri={m.photo} style={{ height: 220 }} />
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <Button title="Kies foto" icon="image" onPress={() => photo('library')} style={{ flex: 1 }} small />
                 {Platform.OS !== 'web' ? <Button title="Maak foto" icon="camera" onPress={() => photo('camera')} style={{ flex: 1 }} small /> : null}

@@ -44,7 +44,7 @@ function RecentStrip({ current, onMore }: { current: number; onMore: () => void 
               pressed ? { opacity: 0.75 } : null,
             ]}
           >
-            <LocoPhoto uri={meta[metaKey(id, mode)]?.photo} style={{ width: 52, height: 36 }} rounded={18} />
+            <LocoPhoto ecosId={id} uri={meta[metaKey(id, mode)]?.photo} style={{ width: 52, height: 36 }} rounded={18} />
             <Text style={{ color: on ? C.accent : C.text, fontSize: 15, fontWeight: on ? F.semi : F.medium }} numberOfLines={1}>
               {l.name}
             </Text>
@@ -99,7 +99,7 @@ export default function DriveScreen() {
   const left = (
     <View style={{ flex: wide ? 1.15 : undefined, gap: 16 }}>
       <View style={[styles().card, { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 14 }]}>
-        <LocoPhoto uri={meta.photo} style={{ width: wide ? 190 : 150, height: wide ? 112 : 90 }} rounded={14} />
+        <LocoPhoto ecosId={id} uri={meta.photo} style={{ width: wide ? 190 : 150, height: wide ? 112 : 90 }} rounded={14} />
         <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
           <Text style={{ color: C.text, fontSize: 28, fontWeight: F.bold }} numberOfLines={1}>
             {loco.name}

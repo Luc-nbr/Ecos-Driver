@@ -13,6 +13,7 @@ interface SimLoco {
   funcs: number[]; // 32 bits als 0/1
   funcdesc: { symbol: number; moment: boolean }[];
   speedindicator: number;
+  locodesc: [string, string, number];
 }
 
 interface SimAccessory {
@@ -52,6 +53,7 @@ export class EcosSimulator {
       this.locos.set(id, {
         id, name, addr, protocol, speed: 0, dir: 0,
         funcs: new Array(32).fill(0), funcdesc: fd(symbols), speedindicator: vmax,
+        locodesc: [/stoom/i.test(name) ? 'LOCO_TYPE_STEAM' : /BR 218|2454|6400|6513/.test(name) ? 'LOCO_TYPE_DIESEL' : 'LOCO_TYPE_E', 'IMAGE_TYPE_INT', id - 1000],
       });
     };
     add('NS 1774', 1774, 'DCC128', [3, 5, [37, true], 40, 34, 260, 32, 9, [263, true], 7], 160);
@@ -108,6 +110,7 @@ export class EcosSimulator {
     const loco: SimLoco = {
       id, name, addr, protocol, speed: 0, dir: 0,
       funcs: new Array(32).fill(0), funcdesc: fd([3]), speedindicator: 0,
+      locodesc: ['LOCO_TYPE_E', 'IMAGE_TYPE_INT', 0],
     };
     this.locos.set(id, loco);
     return loco;
@@ -165,6 +168,7 @@ export class SimSession {
       case 'speedstep': return `speedstep[${Math.round((l.speed / 127) * 126)}]`;
       case 'dir': return `dir[${l.dir}]`;
       case 'speedindicator': return `speedindicator[${l.speedindicator}]`;
+      case 'locodesc': return `locodesc[${l.locodesc[0]},${l.locodesc[1]},${l.locodesc[2]}]`;
       case 'funcset': return `funcset[${l.funcs.join('')}]`;
       case 'func': {
         const n = Number(a.args[0]);

@@ -135,7 +135,7 @@ export function LocoPicker({
                 pressed ? { opacity: 0.75 } : null,
               ]}
             >
-              <LocoPhoto uri={m?.photo} style={{ height: 92 }} rounded={0} />
+              <LocoPhoto ecosId={item} uri={m?.photo} style={{ height: 92 }} rounded={0} />
               <View style={{ padding: 10 }}>
                 <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi }} numberOfLines={1}>
                   {l.name}

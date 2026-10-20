@@ -80,7 +80,7 @@ export default function OverviewScreen() {
                   pressed ? { opacity: 0.75 } : null,
                 ]}
               >
-                <LocoPhoto uri={m.photo} style={{ height: 110 }} rounded={0} />
+                <LocoPhoto ecosId={id} uri={m.photo} style={{ height: 110 }} rounded={0} />
                 <View style={{ padding: 12, flexDirection: 'row', alignItems: 'center' }}>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: C.text, fontSize: 16, fontWeight: F.semi }} numberOfLines={1}>

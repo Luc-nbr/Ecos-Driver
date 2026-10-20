@@ -105,7 +105,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
   return (
     <View style={[card(), { flex: 1, padding: 18, gap: 16 }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-        <LocoPhoto uri={meta.photo} style={{ width: 96, height: 58 }} rounded={12} />
+        <LocoPhoto ecosId={id} uri={meta.photo} style={{ width: 96, height: 58 }} rounded={12} />
         <View style={{ flex: 1, minWidth: 0 }}>
           <Text style={{ color: C.muted, fontSize: 13, fontWeight: F.semi }}>{label.toUpperCase()}</Text>
           <Text style={{ color: C.text, fontSize: 21, fontWeight: F.bold }} numberOfLines={1}>
@@ -194,7 +194,7 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
         </Text>
         <LocoSwitchButton compact onPress={() => setPicker(true)} label={`Plek ${slot + 1}: wissel loc`} />
       </View>
-      {!dense ? <LocoPhoto uri={meta.photo} style={{ height: 56 }} rounded={10} /> : null}
+      {!dense ? <LocoPhoto ecosId={id} uri={meta.photo} style={{ height: 56 }} rounded={10} /> : null}
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
         <Text style={{ color: C.text, fontSize: 30, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
         <Text style={{ color: C.muted, fontSize: 13 }}>km/h</Text>

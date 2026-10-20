@@ -5,7 +5,7 @@ import net from 'node:net';
 import { desEncryptBlock } from '../src/vnc/des';
 import { BinaryTransport, framebufferToBmp, RfbClient } from '../src/vnc/rfb';
 import { SimVncTransport } from '../src/vnc/sim';
-import { startVncSimServer } from './ecos-sim-server';
+import { startHttpSimServer, startVncSimServer } from './ecos-sim-server';
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const hex = (s: string) => Uint8Array.from(s.match(/../g)!.map((h) => parseInt(h, 16)));
@@ -80,6 +80,17 @@ const tests: [string, () => Promise<void> | void][] = [
     await wait(150);
     assert.equal(c.status, 'error');
     assert.match(c.error ?? '', /wachtwoord/i);
+  }],
+  ['Loc-plaatje via de nep-webserver van de ECoS', async () => {
+    const server = startHttpSimServer(15980, false);
+    try {
+      const r = await fetch('http://127.0.0.1:15980/loco/image?type=internal&index=3');
+      assert.equal(r.status, 200);
+      const body = Buffer.from(await r.arrayBuffer());
+      assert.equal(body.subarray(0, 2).toString(), 'BM');
+    } finally {
+      server.close();
+    }
   }],
   ['VNC via TCP, in stukjes', async () => {
     const server = startVncSimServer(15901, 'geheim', false);

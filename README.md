@@ -12,6 +12,7 @@ De app is ingericht als een Apple-app op de iPad: een zijbalk links (staand smal
 - **Loc wisselen in elk rijscherm**: op Rijden met de strook recente locs bovenaan of de knop *Wissel loc*; in Duo, Multi en op het ECoS-scherm met een eigen *Wissel loc*-knop per regelaar. Het wisselvenster heeft zoeken en de filters Alle, Recent en Favorieten.
 - **Duo**: twee locs naast elkaar. **Multi**: tien locs in twee rijen van vijf.
 - **ECoS-scherm**: het **echte scherm van de ECoS live via VNC**: tik en sleep om te bedienen. VNC-poort (standaard 5900) en wachtwoord stel je per centrale in. Of kies *Nagebouwd*: een bedienpaneel met twee draaiwielen, STOP/GO en een aanraakscherm voor locs, functies en wissels.
+- **Loc-afbeeldingen uit de ECoS**: de app vraagt per loc op welk plaatje de ECoS gebruikt (`locodesc`) en haalt dat op bij de ingebouwde webserver van de ECoS (`http://<ecos>/loco/image?type=internal&index=…`). Een eigen foto uit de Bibliotheek gaat voor. Lukt het ophalen niet, dan toont de app een silhouet (elektrisch, diesel of stoom).
 - **Bibliotheek**: locs in een tabel (sorteren, zoeken, filteren), toevoegen, aanpassen en verwijderen op de ECoS; foto, omschrijving, soort, topsnelheid en eigen functienamen/-iconen bewaart de app op de iPad. Tweede tabblad: wissels en rijwegen.
 - STOP/GO voor de hele baan staat altijd rechtsboven.
 - **Licht en donker thema**: in Instellingen kies je Automatisch (volgt de iPad), Licht of Donker.
@@ -104,7 +105,7 @@ Met een gratis Apple ID werkt de app 7 dagen. Daarna voer je het commando opnieu
 
 ```bash
 npm test        # protocoltests (ECoS en VNC), ook via echte TCP
-npm run sim     # start een nep-ECoS op poort 15471 en een nep-VNC-scherm op poort 5900
+npm run sim     # nep-ECoS op poort 15471, nep-VNC-scherm op 5900 en loc-plaatjes op poort 80
 npm run web     # app in de browser (alleen de demo-modus werkt in een browser)
 ```
 

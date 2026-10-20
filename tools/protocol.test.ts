@@ -85,6 +85,7 @@ async function scenario(makeTransport: () => Transport) {
   await c.connect();
   const list = events.find((e) => e.type === 'locoList');
   assert.ok(list && list.type === 'locoList' && list.locos.length >= 10, 'loclijst geladen');
+  assert.deepEqual(list.locos[0].locodesc, { locoType: 'LOCO_TYPE_E', imageType: 'IMAGE_TYPE_INT', index: 0 }, 'locodesc');
   const info = events.find((e) => e.type === 'info');
   assert.ok(info && info.type === 'info' && info.info.model === 'ECoS2');
   const accs = events.find((e) => e.type === 'accessoryList');

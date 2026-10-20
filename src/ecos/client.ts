@@ -21,7 +21,23 @@ export interface LocoInfo {
   funcDesc: (FuncDesc | null)[];
   /** km/h bij topsnelheid, als de ECoS dat kent (speedindicator). */
   speedIndicator?: number;
+  /** Welk plaatje de ECoS voor deze loc gebruikt (locodesc). */
+  locodesc?: LocoDesc;
   detailsLoaded: boolean;
+}
+
+/** locodesc[locotype, imagetype, imageindex] uit de ECoS. */
+export interface LocoDesc {
+  locoType: string;
+  imageType: string;
+  index: number;
+}
+
+export function parseLocodesc(args: string[] | undefined): LocoDesc | undefined {
+  if (!args || args.length < 3) return undefined;
+  const index = Number(args[2]);
+  if (!Number.isFinite(index)) return undefined;
+  return { locoType: args[0], imageType: args[1], index };
 }
 
 export interface AccessoryInfo {
@@ -45,7 +61,7 @@ export interface EcosInfo {
 export type ClientEvent =
   | { type: 'status'; status: 'GO' | 'STOP' | 'SHUTDOWN' | string }
   | { type: 'info'; info: EcosInfo }
-  | { type: 'locoList'; locos: Pick<LocoInfo, 'id' | 'name' | 'addr' | 'protocol'>[] }
+  | { type: 'locoList'; locos: Pick<LocoInfo, 'id' | 'name' | 'addr' | 'protocol' | 'locodesc'>[] }
   | { type: 'loco'; id: number; patch: Partial<LocoInfo> }
   | { type: 'func'; id: number; n: number; on: boolean }
   | { type: 'accessoryList'; list: AccessoryInfo[] }
@@ -252,6 +268,9 @@ export class EcosClient {
         case 'protocol':
           patch.protocol = a.args[0];
           break;
+        case 'locodesc':
+          patch.locodesc = parseLocodesc(a.args);
+          break;
         case 'func':
           this.emit({ type: 'func', id, n: Number(a.args[0]), on: Number(a.args[1]) === 1 });
           break;
@@ -290,7 +309,14 @@ export class EcosClient {
   // ---------------------------------------------------------------- locs
 
   async loadLocoList() {
-    const b = await this.send('queryObjects(10, name, addr, protocol)');
+    // locodesc (welk plaatje) meevragen; oudere firmware die dat niet kent: zonder
+    let b: EcosBlock;
+    try {
+      b = await this.send('queryObjects(10, name, addr, protocol, locodesc)');
+    } catch (e) {
+      if (!(e instanceof EcosError)) throw e;
+      b = await this.send('queryObjects(10, name, addr, protocol)');
+    }
     const locos = b.lines
       .filter((l) => l.id >= 1000)
       .map((l) => ({
@@ -298,6 +324,7 @@ export class EcosClient {
         name: attr(l, 'name')?.[0] ?? `Loc ${l.id}`,
         addr: attrNum(l, 'addr') ?? 0,
         protocol: attr(l, 'protocol')?.[0] ?? '?',
+        locodesc: parseLocodesc(attr(l, 'locodesc')),
       }));
     // locs die verdwenen zijn hoeven we niet meer te volgen
     const ids = new Set(locos.map((l) => l.id));

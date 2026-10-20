@@ -1,26 +1,77 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, StyleProp, Text, View, ViewStyle } from 'react-native';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 import { setDirection, setFunction, setNeutral, toggleFunction } from '../store/actions';
+import type { LocoDesc } from '../ecos/client';
 import { useEcos } from '../store/ecos';
+import { useActiveProfile } from '../store/settings';
 import type { FunctionView } from '../store/hooks';
 import { C, F, R } from '../theme';
 import { Icon } from './Icon';
 import { Segmented } from './ui';
 
-/** Foto van de loc, of een rustig getekend silhouet als er nog geen foto is. */
-export function LocoPhoto({ uri, style, rounded = R.md, hint = false }: { uri?: string; style?: StyleProp<ViewStyle>; rounded?: number; hint?: boolean }) {
-  if (uri) {
+// Afbeeldingen die niet te laden waren, niet steeds opnieuw proberen.
+const failedImages = new Set<string>();
+
+/** Adressen van het plaatje dat de ECoS voor deze loc gebruikt (ingebouwde webserver). */
+function ecosImageUrls(host: string, desc?: LocoDesc): string[] {
+  if (!desc || desc.index < 0 || !host) return [];
+  const base = `http://${host}/loco/image?`;
+  if (desc.imageType === 'IMAGE_TYPE_USER') return [`${base}type=external&index=${desc.index}`, `${base}type=user&index=${desc.index}`];
+  return [`${base}type=internal&index=${desc.index}`];
+}
+
+/**
+ * Afbeelding van de loc: je eigen foto, anders het plaatje uit de ECoS,
+ * anders een rustig getekend silhouet (zonder pantograaf bij diesel/stoom).
+ */
+export function LocoPhoto({
+  uri,
+  ecosId,
+  style,
+  rounded = R.md,
+  hint = false,
+}: {
+  uri?: string;
+  ecosId?: number | null;
+  style?: StyleProp<ViewStyle>;
+  rounded?: number;
+  hint?: boolean;
+}) {
+  const mode = useEcos((s) => s.mode);
+  const desc = useEcos((s) => (ecosId != null ? s.locos[ecosId]?.locodesc : undefined));
+  const host = useActiveProfile().host.trim();
+  const candidates = useMemo(() => {
+    if (uri) return [uri];
+    return mode === 'tcp' ? ecosImageUrls(host, desc).filter((u) => !failedImages.has(u)) : [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uri, mode, host, desc?.imageType, desc?.index]);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => setAttempt(0), [candidates]);
+  const src = candidates[attempt];
+
+  if (src) {
+    const own = src === uri;
     return (
-      <View style={[{ overflow: 'hidden', borderRadius: rounded, backgroundColor: C.panel2 }, style]}>
-        <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      <View style={[{ overflow: 'hidden', borderRadius: rounded, backgroundColor: own ? C.panel2 : C.photoWin, alignItems: 'center', justifyContent: 'center' }, style]}>
+        <Image
+          source={{ uri: src }}
+          style={own ? { width: '100%', height: '100%' } : { width: '92%', height: '84%' }}
+          resizeMode={own ? 'cover' : 'contain'}
+          onError={() => {
+            if (!own) failedImages.add(src);
+            setAttempt((a) => a + 1);
+          }}
+        />
       </View>
     );
   }
+  const electric = !desc || desc.locoType === 'LOCO_TYPE_E' || desc.locoType === 'LOCO_TYPE_MISC';
   return (
     <View style={[{ overflow: 'hidden', borderRadius: rounded, backgroundColor: C.panel2, alignItems: 'center', justifyContent: 'center' }, style]}>
       <Svg width="62%" height="56%" viewBox="0 0 240 110" preserveAspectRatio="xMidYMid meet">
-        <Path d="M60 26 L84 6 M84 6 L108 26 M150 26 L174 6 M174 6 L198 26 M70 6 H190" stroke={C.photoLine} strokeWidth={3} fill="none" />
+        {electric ? <Path d="M60 26 L84 6 M84 6 L108 26 M150 26 L174 6 M174 6 L198 26 M70 6 H190" stroke={C.photoLine} strokeWidth={3} fill="none" /> : null}
+        {desc?.locoType === 'LOCO_TYPE_STEAM' ? <Rect x={150} y={8} width={16} height={22} rx={3} fill={C.photoBody} /> : null}
         <Path d="M16 84 V40 Q16 28 28 28 H206 Q222 28 230 46 L234 84 Z" fill={C.photoBody} />
         <Rect x={16} y={62} width={216} height={6} fill={C.accent} opacity={0.85} />
         <Rect x={196} y={36} width={24} height={18} rx={3} fill={C.photoWin} />

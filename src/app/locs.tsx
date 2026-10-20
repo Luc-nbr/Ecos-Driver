@@ -152,7 +152,7 @@ export default function LibraryScreen() {
                       pressed ? { backgroundColor: C.panel2 } : null,
                     ]}
                   >
-                    <LocoPhoto uri={m.photo} style={{ width: 72, height: 44 }} rounded={8} />
+                    <LocoPhoto ecosId={id} uri={m.photo} style={{ width: 72, height: 44 }} rounded={8} />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Text style={{ color: C.text, fontSize: 16, fontWeight: F.semi, flexShrink: 1 }} numberOfLines={1}>

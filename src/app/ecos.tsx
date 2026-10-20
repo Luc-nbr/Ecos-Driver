@@ -97,7 +97,7 @@ function ScreenLoco({ id, side, onPick }: { id: number | null; side: 'L' | 'R'; 
         <Text style={{ color: S.screenMuted, fontSize: 13 }}>{loco.addr}</Text>
       </Pressable>
       <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-        <LocoPhoto uri={meta.photo} style={{ width: 120, height: 62 }} rounded={6} />
+        <LocoPhoto ecosId={id} uri={meta.photo} style={{ width: 120, height: 62 }} rounded={6} />
         <View style={{ flex: 1, gap: 4 }}>
           <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
             <Text style={{ color: S.screenText, fontSize: 30, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>

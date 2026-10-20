@@ -18,7 +18,10 @@
       "bundleIdentifier": "nl.modelspoor.ecosdriver",
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "ECoS Driver maakt verbinding met je ESU ECoS in het lokale netwerk om je treinen te besturen.",
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
