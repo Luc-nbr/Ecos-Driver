@@ -10,6 +10,7 @@ import { BrakePanel } from '../components/Panels';
 import { Button } from '../components/ui';
 import { metaKey, selectLoco, setSpeed, stopLoco } from '../store/actions';
 import { useEcos } from '../store/ecos';
+import { useScrollEnabled } from '../store/ui';
 import { kmh, useCurrentLocoId, useFunctions, useLoco, useLocoMeta, useMode, useRecentLocos, vmaxOf } from '../store/hooks';
 import { useSettings } from '../store/settings';
 import { C, F, R, themed } from '../theme';
@@ -69,6 +70,7 @@ function RecentStrip({ current, onMore }: { current: number; onMore: () => void 
 
 export default function DriveScreen() {
   const conn = useEcos((s) => s.conn);
+  const scrollEnabled = useScrollEnabled();
   const id = useCurrentLocoId();
   const loco = useLoco(id);
   const meta = useLocoMeta(id);
@@ -138,7 +140,7 @@ export default function DriveScreen() {
           </Pressable>
         </View>
       </View>
-      <Text style={{ color: C.muted, fontSize: 13, textAlign: 'center' }}>Draai het wiel met de klok mee om sneller te rijden. Na een zwiep draait het nog even door.</Text>
+      <Text style={{ color: C.muted, fontSize: 13, textAlign: 'center' }}>Scroll aan het wiel: omhoog is meer gas, omlaag minder. Bij vol vermogen stopt het; terugdraaien neemt meteen gas terug.</Text>
     </View>
   );
 
@@ -161,7 +163,7 @@ export default function DriveScreen() {
 
   return (
     <>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+      <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
         <RecentStrip current={id} onMore={() => setPicker(true)} />
         <View style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
           {left}

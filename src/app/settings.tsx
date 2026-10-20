@@ -78,7 +78,7 @@ export default function SettingsScreen() {
         </Group>
       ) : null}
 
-      <Group title="Over" footer="Snelheid regel je met het draaiwiel: met de klok mee is sneller. Functies die alleen werken zolang je drukt (zoals een tyfoon) hebben een handje.">
+      <Group title="Over" footer="Snelheid regel je door aan het draaiwiel te scrollen: omhoog is meer gas, omlaag minder. Functies die alleen werken zolang je drukt (zoals een tyfoon) hebben een handje.">
         <Row title="ECoS Driver">
           <Text style={{ color: C.muted, fontSize: 17 }}>1.0</Text>
         </Row>

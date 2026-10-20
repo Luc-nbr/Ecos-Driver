@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Image, PanResponder, Text, View } from 'react-native';
 import { useEcos } from '../store/ecos';
 import { useActiveProfile } from '../store/settings';
+import { useScrollLock } from '../store/ui';
 import { C, F, R } from '../theme';
 import { framebufferToBmp, RfbClient, RfbStatus } from '../vnc/rfb';
 import { SimVncTransport } from '../vnc/sim';
@@ -68,6 +69,7 @@ export function VncView({ maxHeight }: { maxHeight: number }) {
   const dispH = size.h * scale;
 
   const view = useRef<React.ComponentRef<typeof View>>(null);
+  const scrollLock = useScrollLock();
   const origin = useRef({ x: 0, y: 0, s: 1 });
   origin.current.s = scale;
   const responder = useMemo(() => {
@@ -122,6 +124,9 @@ export function VncView({ maxHeight }: { maxHeight: number }) {
         <View
           ref={view}
           {...(status === 'connected' ? responder.panHandlers : {})}
+          onTouchStart={scrollLock.onTouchStart}
+          onTouchEnd={scrollLock.onTouchEnd}
+          onTouchCancel={scrollLock.onTouchCancel}
           accessibilityLabel="ECoS-scherm via VNC. Tik om te bedienen."
           style={{ width: dispW || '100%', height: dispH || 300, borderRadius: R.md, overflow: 'hidden', backgroundColor: '#000', borderWidth: 6, borderColor: '#111' }}
         >

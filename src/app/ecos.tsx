@@ -9,6 +9,7 @@ import { LocoPhoto } from '../components/Loco';
 import { JogWheel } from '../components/JogWheel';
 import { emergencyStop, setDirection, setFunction, setPower, setSlot, setSpeed, switchAccessory, toggleFunction } from '../store/actions';
 import { useEcos } from '../store/ecos';
+import { useScrollEnabled } from '../store/ui';
 import { FunctionView, kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
 import { C, F } from '../theme';
 import { Segmented } from '../components/ui';
@@ -228,6 +229,7 @@ function HwButton({ label, color, onPress, active }: { label: string; color: str
 
 export default function EcosCloneScreen() {
   const conn = useEcos((s) => s.conn);
+  const scrollEnabled = useScrollEnabled();
   const status = useEcos((s) => s.status);
   const info = useEcos((s) => s.info);
   const slots = useSlots('duo');
@@ -244,7 +246,7 @@ export default function EcosCloneScreen() {
   const go = status === 'GO';
 
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+    <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
       <View style={{ maxWidth: 520 }}>
         <Segmented
           label="Weergave ECoS-scherm"

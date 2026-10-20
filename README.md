@@ -8,7 +8,7 @@ De app is ingericht als een Apple-app op de iPad: een zijbalk links (staand smal
 
 - **Centrales**: profielen voor meerdere ECoS-centrales (bijv. thuisbaan en clubbaan) met IP-adres en poort; verbinden met één tik, of de **demo-modus** zonder centrale.
 - **Overzicht**: tellers (locs, wissels, rijwegen, rijdende locs, reactietijd), de baanstatus met STOP/GO, recent bestuurde locs en snel schakelen van wissels en rijwegen.
-- **Rijden**: eindeloos draaiwiel voor de snelheid (met de klok mee = sneller, draait na een zwiep nog even door), Vooruit/Neutraal/Achteruit, rem, loc stoppen en alle functies F0–F31 als drukknoppen met icoontjes (amber = aan; met handje = alleen zolang je drukt).
+- **Rijden**: eindeloos draaiwiel voor de snelheid: scroll omhoog (of naar rechts) voor meer gas, omlaag voor minder; bij vol vermogen geeft verder scrollen niets meer en terugdraaien neemt meteen gas terug. Tijdens het bedienen scrolt de pagina niet mee, Vooruit/Neutraal/Achteruit, rem, loc stoppen en alle functies F0–F31 als drukknoppen met icoontjes (amber = aan; met handje = alleen zolang je drukt).
 - **Loc wisselen in elk rijscherm**: op Rijden met de strook recente locs bovenaan of de knop *Wissel loc*; in Duo, Multi en op het ECoS-scherm met een eigen *Wissel loc*-knop per regelaar. Het wisselvenster heeft zoeken en de filters Alle, Recent en Favorieten.
 - **Duo**: twee locs naast elkaar. **Multi**: tien locs in twee rijen van vijf.
 - **ECoS-scherm**: het **echte scherm van de ECoS live via VNC**: tik en sleep om te bedienen. VNC-poort (standaard 5900) en wachtwoord stel je per centrale in. Of kies *Nagebouwd*: een bedienpaneel met twee draaiwielen, STOP/GO en een aanraakscherm voor locs, functies en wissels.

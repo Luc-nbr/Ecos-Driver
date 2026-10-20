@@ -2,10 +2,14 @@ import * as Haptics from 'expo-haptics';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { PanResponder, Platform, Text, View } from 'react-native';
 import Svg, { Circle, Defs, G, Line, Path, RadialGradient, Stop } from 'react-native-svg';
+import { useScrollLock } from '../store/ui';
 import { C, F } from '../theme';
 
 const MAX = 126;
-const DEG_PER_STEP = 2.2; // zoveel graden draaien = 1 rijstap (bijna één slag voor de hele schaal)
+// op web: slepen met de muis mag geen tekst selecteren (dat breekt de veeg af)
+const NO_SELECT = (Platform.OS === 'web' ? { userSelect: 'none' } : {}) as object;
+const PX_PER_STEP = 3.2; // zoveel pixels scrollen = 1 rijstap (hele schaal ≈ 400 px)
+const DEG_PER_PX = 0.9; // zo ver draait het wiel zichtbaar mee per pixel
 const ARC_START = 135;
 const ARC_SWEEP = 270;
 
@@ -23,9 +27,10 @@ export function arcPath(cx: number, cy: number, r: number, from: number, to: num
 }
 
 /**
- * Eindeloos draaiwiel voor de snelheid (zoals een jog-wiel of de knop van de ECoS):
- * met de klok mee = sneller, tegen de klok in = langzamer. Na een zwiep draait het
- * nog even door; aanraken, stop, neutraal of de rem houdt het meteen tegen.
+ * Eindeloos draaiwiel voor de snelheid. Je scrolt aan het wiel: omhoog of naar
+ * rechts vegen = meer gas, omlaag of naar links = minder. Het wiel draait mee en
+ * heeft geen eind. Bij vol vermogen (of bij 0) geeft verder scrollen niets meer,
+ * en zodra je terugdraait neemt het gas meteen af. Geen doordraaien na loslaten.
  */
 export function JogWheel({
   value,
@@ -47,129 +52,79 @@ export function JogWheel({
   label?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9]/g, '');
-  const ref = useRef<React.ComponentRef<typeof View>>(null);
   const [rotation, setRotation] = useState(0);
   const rot = useRef(0);
-  const center = useRef({ x: 0, y: 0 });
-  const lastAngle = useRef<number | null>(null);
-  const samples = useRef<{ t: number; a: number }[]>([]);
   const acc = useRef(0);
   const val = useRef(value);
   const lastEmitted = useRef(value);
-  const anim = useRef<number | null>(null);
+  const atEnd = useRef(false);
   const cb = useRef(onChange);
   cb.current = onChange;
   const dis = useRef(disabled);
   dis.current = disabled;
+  const scrollLock = useScrollLock();
+  const releaseLock = useRef(scrollLock.release);
+  releaseLock.current = scrollLock.release;
+  // kleinere wielen iets gevoeliger, zodat het hele bereik in één veeg past
+  const pxPerStep = useRef(PX_PER_STEP);
+  pxPerStep.current = size < 200 ? PX_PER_STEP * 0.8 : PX_PER_STEP;
 
-  const stopSpin = () => {
-    if (anim.current !== null) cancelAnimationFrame(anim.current);
-    anim.current = null;
-  };
-
-  // snelheid van buitenaf veranderd (stop, rem, ECoS): doordraaien stoppen
+  // snelheid van buitenaf veranderd (stop, rem, ECoS)
   useEffect(() => {
     if (value === lastEmitted.current) return;
     lastEmitted.current = value;
     val.current = value;
     acc.current = 0;
-    stopSpin();
   }, [value]);
-  useEffect(() => stopSpin, []);
-  useEffect(() => {
-    if (disabled) stopSpin();
-  }, [disabled]);
+  useEffect(() => () => releaseLock.current(), []);
 
-  /** Draai het wiel d graden (positief = met de klok mee). False als het wiel aan het eind zit. */
-  const turn = (d: number): boolean => {
-    if (dis.current) return false;
+  /** Scroll d pixels (positief = meer gas). */
+  const scroll = (d: number) => {
+    if (dis.current || d === 0) return;
     const v = val.current;
     if ((v >= MAX && d > 0) || (v <= 0 && d < 0)) {
+      // aan het eind: niets meer doen, en niets opsparen
       acc.current = 0;
-      return false;
+      if (!atEnd.current && Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+      atEnd.current = true;
+      return;
     }
-    rot.current += d;
+    atEnd.current = false;
+    rot.current += d * DEG_PER_PX;
     setRotation(rot.current);
-    acc.current += d / DEG_PER_STEP;
+    acc.current += d / pxPerStep.current;
     const steps = acc.current > 0 ? Math.floor(acc.current) : Math.ceil(acc.current);
-    if (steps !== 0) {
-      acc.current -= steps;
-      const next = Math.max(0, Math.min(MAX, v + steps));
-      if (next !== v) {
-        if (Platform.OS !== 'web' && Math.floor(next / 6) !== Math.floor(v / 6)) Haptics.selectionAsync().catch(() => {});
-        val.current = next;
-        lastEmitted.current = next;
-        cb.current(next);
-      }
-    }
-    return true;
+    if (steps === 0) return;
+    acc.current -= steps;
+    const next = Math.max(0, Math.min(MAX, v + steps));
+    if (next === v) return;
+    if (Platform.OS !== 'web' && Math.floor(next / 6) !== Math.floor(v / 6)) Haptics.selectionAsync().catch(() => {});
+    val.current = next;
+    lastEmitted.current = next;
+    cb.current(next);
   };
 
   const responder = useMemo(() => {
-    const angleAt = (px: number, py: number) => {
-      const dx = px - center.current.x;
-      const dy = py - center.current.y;
-      if (dx * dx + dy * dy < 14 * 14) return null; // te dicht bij het midden
-      return (Math.atan2(dy, dx) * 180) / Math.PI;
-    };
-    const onMove = (px: number, py: number) => {
-      const a = angleAt(px, py);
-      if (a === null) return;
-      if (lastAngle.current !== null) {
-        let d = a - lastAngle.current;
-        if (d > 180) d -= 360;
-        if (d < -180) d += 360;
-        turn(d);
-        const now = Date.now();
-        samples.current.push({ t: now, a: d });
-        samples.current = samples.current.filter((s) => now - s.t < 90);
-      }
-      lastAngle.current = a;
-    };
+    let last = { x: 0, y: 0 };
     return PanResponder.create({
       onStartShouldSetPanResponder: () => !dis.current,
+      onStartShouldSetPanResponderCapture: () => !dis.current,
       onMoveShouldSetPanResponder: () => !dis.current,
       onMoveShouldSetPanResponderCapture: () => !dis.current,
       onPanResponderTerminationRequest: () => false,
-      onPanResponderGrant: (e) => {
-        stopSpin();
-        lastAngle.current = null;
-        samples.current = [];
-        const { pageX, pageY } = e.nativeEvent;
-        ref.current?.measureInWindow((x, y, w, h) => {
-          center.current = { x: x + w / 2, y: y + h / 2 };
-          lastAngle.current = angleAt(pageX, pageY);
-        });
+      onShouldBlockNativeResponder: () => true,
+      onPanResponderGrant: () => {
+        last = { x: 0, y: 0 };
+        atEnd.current = false;
       },
-      onPanResponderMove: (e) => onMove(e.nativeEvent.pageX, e.nativeEvent.pageY),
-      onPanResponderRelease: () => {
-        // doordraaien met de draaisnelheid van de laatste beweging (graden per ms)
-        const s = samples.current;
-        samples.current = [];
-        lastAngle.current = null;
-        if (s.length < 2) return;
-        const span = Math.max(16, Date.now() - s[0].t);
-        let w = s.reduce((sum, x) => sum + x.a, 0) / span;
-        w = Math.max(-2.5, Math.min(2.5, w));
-        if (Math.abs(w) < 0.12) return;
-        let last = Date.now();
-        const tick = () => {
-          const now = Date.now();
-          const dt = Math.min(48, now - last);
-          last = now;
-          if (!turn(w * dt)) {
-            anim.current = null;
-            return;
-          }
-          w *= Math.pow(0.95, dt / 16);
-          if (Math.abs(w) < 0.02) {
-            anim.current = null;
-            return;
-          }
-          anim.current = requestAnimationFrame(tick);
-        };
-        anim.current = requestAnimationFrame(tick);
+      onPanResponderMove: (_, g) => {
+        // omhoog en naar rechts tellen allebei als "meer gas"
+        const d = g.dx - last.x - (g.dy - last.y);
+        last = { x: g.dx, y: g.dy };
+        scroll(d);
       },
+      onPanResponderRelease: () => releaseLock.current(),
+      onPanResponderTerminate: () => releaseLock.current(),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -188,15 +143,17 @@ export function JogWheel({
 
   return (
     <View
-      ref={ref}
       {...responder.panHandlers}
+      onTouchStart={scrollLock.onTouchStart}
+      onTouchEnd={scrollLock.onTouchEnd}
+      onTouchCancel={scrollLock.onTouchCancel}
       accessible
       accessibilityRole="adjustable"
-      accessibilityLabel={`${label}: draai met de klok mee voor sneller`}
+      accessibilityLabel={`${label}: scroll omhoog voor meer gas`}
       accessibilityValue={{ min: 0, max: MAX, now: value }}
       accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
       onAccessibilityAction={(e) => onChange(Math.max(0, Math.min(MAX, value + (e.nativeEvent.actionName === 'increment' ? 6 : -6))))}
-      style={{ width: size, height: size, opacity: disabled ? 0.55 : 1 }}
+      style={[{ width: size, height: size, opacity: disabled ? 0.55 : 1 }, NO_SELECT]}
     >
       <Svg width={size} height={size}>
         <Defs>

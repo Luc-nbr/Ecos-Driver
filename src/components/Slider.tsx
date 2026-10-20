@@ -1,6 +1,7 @@
 import React, { useId, useMemo, useRef, useState } from 'react';
 import { PanResponder, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
+import { useScrollLock } from '../store/ui';
 import { C } from '../theme';
 
 const THUMB = 28;
@@ -36,6 +37,7 @@ export function Slider({
 }) {
   const gid = 'g' + useId().replace(/[^a-zA-Z0-9]/g, '');
   const ref = useRef<React.ComponentRef<typeof View>>(null);
+  const scrollLock = useScrollLock();
   const box = useRef({ x: 0, y: 0, w: 1, h: 1 });
   const [size, setSize] = useState({ w: 0, h: 0 });
   const cb = useRef(onChange);
@@ -84,6 +86,9 @@ export function Slider({
     <View
       ref={ref}
       {...responder.panHandlers}
+      onTouchStart={scrollLock.onTouchStart}
+      onTouchEnd={scrollLock.onTouchEnd}
+      onTouchCancel={scrollLock.onTouchCancel}
       onLayout={(e) => setSize({ w: e.nativeEvent.layout.width, h: e.nativeEvent.layout.height })}
       accessible
       accessibilityRole="adjustable"
