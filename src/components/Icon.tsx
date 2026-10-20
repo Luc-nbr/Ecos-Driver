@@ -23,6 +23,12 @@ const PATHS: Record<string, string[]> = {
   shunting: ['M3 12h18', 'M7 8l-4 4 4 4M17 8l4 4-4 4'],
   speaker: ['M3 10h4l5-4v12l-5-4H3z', 'M16 9l5 6M21 9l-5 6'],
   more: ['M5 12h.01M12 12h.01M19 12h.01'],
+  swap: ['M7 4L3 8l4 4', 'M3 8h14', 'M17 12l4 4-4 4', 'M21 16H7'],
+  list: ['M9 6h11M9 12h11M9 18h11', 'M4.5 6h.01M4.5 12h.01M4.5 18h.01'],
+  server: ['M4 4h16v6H4zM4 14h16v6H4z', 'M8 7h.01M8 17h.01'],
+  overview: ['M4 4h7v9H4zM13 4h7v5h-7zM13 11h7v9h-7zM4 15h7v5H4z'],
+  sidebar: ['M4 4h16v16H4z', 'M9 4v16'],
+  dot: ['M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0'],
   button: ['M4 7a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z', 'M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z'],
   hand: ['M9 11V5a1.5 1.5 0 0 1 3 0v5', 'M12 10V4a1.5 1.5 0 0 1 3 0v6', 'M15 10V6a1.5 1.5 0 0 1 3 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L3.5 14a1.5 1.5 0 0 1 2.5-1.7L9 15'],
   music: ['M9 18V5l11-2v13', 'M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z'],
@@ -91,16 +97,16 @@ export function Icon({
   );
 }
 
-/** Eigen logo: geel blok met een treinsymbool (geen NS-merk). */
+/** Eigen logo: amber blok met een treinsymbool. */
 export function AppLogo({ size = 52 }: { size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 52 52">
-      <Rect x={0} y={0} width={52} height={52} rx={14} fill="#FFC917" />
-      <Path d="M15 34V17a5 5 0 0 1 5-5h12a5 5 0 0 1 5 5v17" stroke="#0A1A3F" strokeWidth={3.2} strokeLinecap="round" fill="none" />
-      <Path d="M15 25h22" stroke="#0A1A3F" strokeWidth={3.2} strokeLinecap="round" />
-      <Circle cx={20.5} cy={30} r={1.8} fill="#0A1A3F" />
-      <Circle cx={31.5} cy={30} r={1.8} fill="#0A1A3F" />
-      <Path d="M19 38l-3 4M33 38l3 4" stroke="#0A1A3F" strokeWidth={3.2} strokeLinecap="round" />
+      <Rect x={0} y={0} width={52} height={52} rx={13} fill="#FF9F0A" />
+      <Path d="M15 34V17a5 5 0 0 1 5-5h12a5 5 0 0 1 5 5v17" stroke="#000000" strokeWidth={3.2} strokeLinecap="round" fill="none" />
+      <Path d="M15 25h22" stroke="#000000" strokeWidth={3.2} strokeLinecap="round" />
+      <Circle cx={20.5} cy={30} r={1.8} fill="#000000" />
+      <Circle cx={31.5} cy={30} r={1.8} fill="#000000" />
+      <Path d="M19 38l-3 4M33 38l3 4" stroke="#000000" strokeWidth={3.2} strokeLinecap="round" />
     </Svg>
   );
 }

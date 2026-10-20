@@ -79,3 +79,11 @@ export function useCurrentLocoId(): number | null {
   const exists = useEcos((s) => (cur != null ? !!s.locos[cur] : false));
   return exists ? cur : first;
 }
+
+/** Recent bestuurde locs die nog op de ECoS staan. */
+export function useRecentLocos(): number[] {
+  const mode = useMode();
+  const recent = useSettings((s) => s.recent?.[mode]);
+  const locos = useEcos((s) => s.locos);
+  return useMemo(() => (recent ?? []).filter((id) => !!locos[id]), [recent, locos]);
+}

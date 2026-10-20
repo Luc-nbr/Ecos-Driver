@@ -201,34 +201,34 @@ export function JogWheel({
       <Svg width={size} height={size}>
         <Defs>
           <RadialGradient id={`w${uid}`} cx="42%" cy="36%" r="75%">
-            {yellow ? <Stop offset="0" stopColor="#FFE07A" /> : <Stop offset="0" stopColor="#30426A" />}
-            {yellow ? <Stop offset="0.6" stopColor="#FFC917" /> : <Stop offset="0.65" stopColor="#14214A" />}
-            {yellow ? <Stop offset="1" stopColor="#D9A400" /> : <Stop offset="1" stopColor="#081230" />}
+            {yellow ? <Stop offset="0" stopColor="#FFC766" /> : <Stop offset="0" stopColor="#4A4A4E" />}
+            {yellow ? <Stop offset="0.6" stopColor="#FF9F0A" /> : <Stop offset="0.65" stopColor="#2C2C2E" />}
+            {yellow ? <Stop offset="1" stopColor="#C77700" /> : <Stop offset="1" stopColor="#1A1A1C" />}
           </RadialGradient>
           <RadialGradient id={`d${uid}`} cx="50%" cy="40%" r="60%">
-            <Stop offset="0" stopColor={yellow ? '#C99700' : '#050C22'} />
-            <Stop offset="1" stopColor={yellow ? '#FFD84D' : '#22325A'} />
+            <Stop offset="0" stopColor={yellow ? '#B36B00' : '#111113'} />
+            <Stop offset="1" stopColor={yellow ? '#FFB340' : '#3A3A3C'} />
           </RadialGradient>
         </Defs>
         {/* snelheidsboog */}
-        <Path d={arcPath(cx, cy, rArc, ARC_START, ARC_START + ARC_SWEEP)} stroke={C.track} strokeWidth={10} strokeLinecap="round" fill="none" />
-        {frac > 0.004 ? <Path d={arcPath(cx, cy, rArc, ARC_START, end)} stroke={C.yellow} strokeWidth={10} strokeLinecap="round" fill="none" /> : null}
+        <Path d={arcPath(cx, cy, rArc, ARC_START, ARC_START + ARC_SWEEP)} stroke={C.track} strokeWidth={8} strokeLinecap="round" fill="none" />
+        {frac > 0.004 ? <Path d={arcPath(cx, cy, rArc, ARC_START, end)} stroke={C.accent} strokeWidth={8} strokeLinecap="round" fill="none" /> : null}
         {/* schaduw + wiel */}
-        <Circle cx={cx} cy={cy + 6} r={rWheel} fill="#000814" opacity={0.45} />
-        <Circle cx={cx} cy={cy} r={rWheel} fill={`url(#w${uid})`} stroke={yellow ? '#B88A00' : '#2A3D6B'} strokeWidth={2} />
+        <Circle cx={cx} cy={cy + 6} r={rWheel} fill="#000000" opacity={0.5} />
+        <Circle cx={cx} cy={cy} r={rWheel} fill={`url(#w${uid})`} stroke={yellow ? '#C77700' : '#48484A'} strokeWidth={1.5} />
         <G transform={`rotate(${rotation % 360} ${cx} ${cy})`}>
           {Array.from({ length: ticks }, (_, i) => {
             const a = (360 / ticks) * i;
             const p1 = polar(cx, cy, rWheel - 3, a);
             const p2 = polar(cx, cy, rWheel - 15, a);
             return (
-              <Line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={yellow ? '#A67C00' : '#6F87BE'} strokeWidth={3} strokeLinecap="round" opacity={0.85} />
+              <Line key={i} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={yellow ? '#B36B00' : '#636366'} strokeWidth={2.5} strokeLinecap="round" opacity={0.9} />
             );
           })}
           {/* vingerkuil */}
-          <Circle cx={dimple.x} cy={dimple.y} r={rWheel * 0.17} fill={`url(#d${uid})`} stroke={yellow ? '#B88A00' : '#3A4F80'} strokeWidth={1.5} />
+          <Circle cx={dimple.x} cy={dimple.y} r={rWheel * 0.17} fill={`url(#d${uid})`} stroke={yellow ? '#C77700' : '#48484A'} strokeWidth={1} />
         </G>
-        <Circle cx={cx} cy={cy} r={rWheel * 0.2} fill={yellow ? '#F2B900' : '#0E1A3C'} stroke={yellow ? '#B88A00' : '#2A3D6B'} strokeWidth={1.5} />
+        <Circle cx={cx} cy={cy} r={rWheel * 0.2} fill={yellow ? '#E58E00' : '#1C1C1E'} stroke={yellow ? '#C77700' : '#48484A'} strokeWidth={1} />
       </Svg>
       {showScale ? (
         <>

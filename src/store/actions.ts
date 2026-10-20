@@ -5,7 +5,7 @@ import { EcosClient, EcosError, LocoInfo } from '../ecos/client';
 import { TcpTransport } from '../ecos/tcpTransport';
 import { SimTransport } from '../ecos/transport';
 import { emptyLoco, patchLoco, showToast, useEcos } from './ecos';
-import { ConnMode, LocoMeta, useSettings } from './settings';
+import { activeProfile, ConnMode, LocoMeta, useSettings } from './settings';
 
 let client: EcosClient | null = null;
 let wantConnected = false;
@@ -35,7 +35,7 @@ function report(e: unknown) {
 export async function connect(mode: ConnMode) {
   await disconnect(false);
   wantConnected = true;
-  const { host, port } = useSettings.getState();
+  const { host, port } = activeProfile();
   useSettings.getState().set({ lastMode: mode });
   useEcos.setState({
     conn: 'connecting', mode, error: null, info: null, status: '?', latency: null,
@@ -179,6 +179,8 @@ export function setSpeed(id: number, speed: number) {
   const v = Math.max(0, Math.min(126, Math.round(speed)));
   if (s.locos[id]?.speed === v) return;
   patchLoco(id, { speed: v });
+  const mode = s.mode ?? 'tcp';
+  if (v > 0 && useSettings.getState().recent?.[mode]?.[0] !== id) pushRecent(id);
   client?.setSpeed(id, v);
 }
 
@@ -263,10 +265,19 @@ export async function setPower(go: boolean) {
 
 // ------------------------------------------------------------------ selectie
 
+/** Onthoud een loc als recent bestuurd (voor snel wisselen). */
+function pushRecent(id: number) {
+  const mode = useEcos.getState().mode ?? 'tcp';
+  const s = useSettings.getState();
+  const list = [id, ...(s.recent?.[mode] ?? []).filter((x) => x !== id)].slice(0, 12);
+  s.set({ recent: { ...(s.recent ?? { tcp: [], demo: [] }), [mode]: list } });
+}
+
 export function selectLoco(id: number) {
   const mode = useEcos.getState().mode ?? 'tcp';
   const s = useSettings.getState();
   s.set({ current: { ...s.current, [mode]: id } });
+  pushRecent(id);
 }
 
 export function setSlot(kind: 'duo' | 'multi', index: number, id: number | null) {
@@ -275,6 +286,7 @@ export function setSlot(kind: 'duo' | 'multi', index: number, id: number | null)
   const slots = (s[kind][mode] ?? []).slice();
   slots[index] = id;
   s.set({ [kind]: { ...s[kind], [mode]: slots } } as Partial<typeof s>);
+  if (id != null) pushRecent(id);
 }
 
 // ------------------------------------------------------------------ bibliotheek
@@ -338,6 +350,7 @@ export async function deleteLoco(id: number): Promise<boolean> {
       current: { ...s.current, [mode]: s.current[mode] === id ? useEcos.getState().locoIds[0] ?? null : s.current[mode] },
       duo: { ...s.duo, [mode]: clear(s.duo[mode]) },
       multi: { ...s.multi, [mode]: clear(s.multi[mode]) },
+      recent: { ...s.recent, [mode]: (s.recent?.[mode] ?? []).filter((x) => x !== id) },
     });
     showToast('Loc verwijderd van de ECoS');
     return true;

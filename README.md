@@ -4,14 +4,16 @@ iPad-app (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS
 
 ## Wat kan de app
 
-- **Verbinden** met de ECoS via wifi (TCP-poort 15471), met automatisch opnieuw verbinden.
-- **Rijden**: een eindeloos draaiwiel voor de snelheid, zoals in ECoS Cab: met de klok mee is sneller, en na een zwiep draait het nog even door. Verder een km/h-boog, Vooruit/Neutraal/Achteruit, rem, noodstop en alle functies F0–F31 per loc als drukknoppen met icoontjes (geel = aan). Functies zoals de tyfoon (met handje) werken zolang je ze vasthoudt.
-- **Duo**: twee locs naast elkaar besturen.
-- **Multi**: tien locs tegelijk, in twee rijen van vijf.
-- **ECoS**: een nagebouwd ECoS-bedienpaneel met twee eindeloze draaiwielen, STOP/GO en een aanraakscherm voor locs, functies en wissels. Het werkt met live gegevens uit je centrale. De ECoS zelf kan zijn scherm niet over het netwerk delen, daarom bouwt de app het na.
-- **Locomotieven**: een bibliotheek waarin je locs **toevoegt, aanpast en verwijdert**. Naam, adres en protocol gaan direct naar de ECoS. Een foto, omschrijving, soort, topsnelheid en eigen functienamen en -iconen bewaart de app op de iPad.
-- **Rijwegen en wissels** uit de ECoS schakelen.
-- **Demo-modus**: een ingebouwde ECoS-simulator, zodat je alles zonder centrale kunt proberen.
+De app is ingericht als een Apple-app op de iPad: een zijbalk links (staand smal, liggend breed), grafiet-tinten, één amber accentkleur en rood alleen voor STOP.
+
+- **Centrales**: profielen voor meerdere ECoS-centrales (bijv. thuisbaan en clubbaan) met IP-adres en poort; verbinden met één tik, of de **demo-modus** zonder centrale.
+- **Overzicht**: tellers (locs, wissels, rijwegen, rijdende locs, reactietijd), de baanstatus met STOP/GO, recent bestuurde locs en snel schakelen van wissels en rijwegen.
+- **Rijden**: eindeloos draaiwiel voor de snelheid (met de klok mee = sneller, draait na een zwiep nog even door), Vooruit/Neutraal/Achteruit, rem, loc stoppen en alle functies F0–F31 als drukknoppen met icoontjes (amber = aan; met handje = alleen zolang je drukt).
+- **Loc wisselen in elk rijscherm**: op Rijden met de strook recente locs bovenaan of de knop *Wissel loc*; in Duo, Multi en op het ECoS-scherm met een eigen *Wissel loc*-knop per regelaar. Het wisselvenster heeft zoeken en de filters Alle, Recent en Favorieten.
+- **Duo**: twee locs naast elkaar. **Multi**: tien locs in twee rijen van vijf.
+- **ECoS-scherm**: een nagebouwd ECoS-bedienpaneel met twee draaiwielen, STOP/GO en het aanraakscherm voor locs, functies en wissels.
+- **Bibliotheek**: locs in een tabel (sorteren, zoeken, filteren), toevoegen, aanpassen en verwijderen op de ECoS; foto, omschrijving, soort, topsnelheid en eigen functienamen/-iconen bewaart de app op de iPad. Tweede tabblad: wissels en rijwegen.
+- STOP/GO voor de hele baan staat altijd rechtsboven.
 
 ## Op je iPad zetten
 
@@ -116,7 +118,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 | `src/ecos/simulator.ts` | ECoS-simulator voor de demo-modus en de tests |
 | `src/ecos/tcpTransport.ts` | TCP-verbinding op iOS en Android |
 | `src/store/` | app-state (zustand) en acties; instellingen worden bewaard op de iPad |
-| `src/app/` | schermen (Expo Router): Rijden, Duo, Multi, ECoS, Locomotieven, Instellingen |
+| `src/app/` | schermen (Expo Router): Centrales, Overzicht, Rijden, Duo, Multi, ECoS-scherm, Bibliotheek, Instellingen |
 | `src/components/` | knoppen, snelheidsknop, schuifregelaars, panelen |
 | `codemagic.yaml`, `.github/workflows/` | gratis bouwen van de iPad-app in de cloud |
 
@@ -128,10 +130,14 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 
 ## Schermafbeeldingen (demo-modus)
 
-| Rijden | Duo | Multi (liggend) |
+| Rijden | Loc wisselen | Overzicht |
 | --- | --- | --- |
-| ![Rijden](docs/screenshots/rijden.png) | ![Duo](docs/screenshots/duo.png) | ![Multi](docs/screenshots/multi.png) |
+| ![Rijden](docs/screenshots/rijden.png) | ![Wissel loc](docs/screenshots/wissel.png) | ![Overzicht](docs/screenshots/overzicht.png) |
 
-| ECoS | Locomotieven | Loc bewerken |
+| Duo | Multi | ECoS-scherm |
 | --- | --- | --- |
-| ![ECoS](docs/screenshots/ecos.png) | ![Locomotieven](docs/screenshots/locomotieven.png) | ![Loc bewerken](docs/screenshots/loc-bewerken.png) |
+| ![Duo](docs/screenshots/duo.png) | ![Multi](docs/screenshots/multi.png) | ![ECoS](docs/screenshots/ecos.png) |
+
+| Bibliotheek | Centrales | Rijden (staand) |
+| --- | --- | --- |
+| ![Bibliotheek](docs/screenshots/bibliotheek.png) | ![Centrales](docs/screenshots/centrales.png) | ![Rijden staand](docs/screenshots/rijden-staand.png) |

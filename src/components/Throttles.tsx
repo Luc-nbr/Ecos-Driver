@@ -1,15 +1,15 @@
 // Rijregelaars voor de duo- en multi-weergave.
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { setSlot, setSpeed, stopLoco } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf } from '../store/hooks';
-import { C, F, R, shadow } from '../theme';
-import { LocoPicker } from './Dialogs';
+import { C, F, R } from '../theme';
+import { LocoPicker, Sheet } from './Dialogs';
 import { Icon } from './Icon';
-import { DirectionButtons, FunctionTile, LocoPhoto } from './Loco';
-import { BrakePanel } from './Panels';
 import { JogWheel } from './JogWheel';
+import { DirectionButtons, FunctionTile, LocoPhoto, LocoSwitchButton } from './Loco';
+import { BrakePanel } from './Panels';
 
 /** Venster met alle functies van een loc als tegels. */
 export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: boolean; onClose: () => void }) {
@@ -17,25 +17,21 @@ export function FunctionsSheet({ id, visible, onClose }: { id: number; visible: 
   const meta = useLocoMeta(id);
   const funcs = useFunctions(loco, meta);
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: 'rgba(2,8,24,0.7)', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <View style={[{ width: '100%', maxWidth: 760, maxHeight: '85%', backgroundColor: C.panel, borderRadius: R.xl, padding: 20, gap: 14, borderWidth: 1, borderColor: C.border }, shadow]}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ color: C.text, fontSize: 24, fontWeight: F.bold }}>Functies · {loco?.name}</Text>
-            <Pressable accessibilityRole="button" accessibilityLabel="Sluiten" onPress={onClose} hitSlop={10} style={{ padding: 8 }}>
-              <Icon name="close" size={26} color={C.text} />
-            </Pressable>
-          </View>
-          <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
-            {funcs.map((f) => (
-              <View key={f.n} style={{ width: 128 }}>
-                <FunctionTile id={id} f={f} />
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+    <Sheet visible={visible} onClose={onClose} maxWidth={760}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Text style={{ color: C.text, fontSize: 22, fontWeight: F.bold }}>Functies · {loco?.name}</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="Sluiten" onPress={onClose} hitSlop={10} style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: C.panel2, alignItems: 'center', justifyContent: 'center' }}>
+          <Icon name="close" size={16} color={C.muted} strokeWidth={2.6} />
+        </Pressable>
       </View>
-    </Modal>
+      <ScrollView contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+        {funcs.map((f) => (
+          <View key={f.n} style={{ width: 128 }}>
+            <FunctionTile id={id} f={f} />
+          </View>
+        ))}
+      </ScrollView>
+    </Sheet>
   );
 }
 
@@ -48,30 +44,31 @@ function EmptySlot({ label, onPress, big }: { label: string; onPress: () => void
       style={({ pressed }) => [
         {
           flex: 1,
-          borderRadius: R.lg,
-          borderWidth: 2,
+          borderRadius: R.xl,
+          borderWidth: 1.5,
           borderStyle: 'dashed',
           borderColor: C.border,
           alignItems: 'center',
           justifyContent: 'center',
           gap: 10,
-          minHeight: big ? 600 : 200,
+          minHeight: big ? 560 : 200,
         },
         pressed ? { backgroundColor: C.panel } : null,
       ]}
     >
-      <View style={{ width: big ? 80 : 56, height: big ? 80 : 56, borderRadius: 40, backgroundColor: C.panel2, alignItems: 'center', justifyContent: 'center' }}>
-        <Icon name="plus" size={big ? 40 : 28} color={C.yellow} strokeWidth={2.6} />
+      <View style={{ width: big ? 64 : 48, height: big ? 64 : 48, borderRadius: 32, backgroundColor: C.accentSoft, alignItems: 'center', justifyContent: 'center' }}>
+        <Icon name="plus" size={big ? 30 : 24} color={C.accent} strokeWidth={2.4} />
       </View>
-      <Text style={{ color: C.text, fontSize: big ? 20 : 16, fontWeight: F.semi }}>{label}</Text>
-      <Text style={{ color: C.muted, fontSize: big ? 16 : 13 }}>Tik om een loc te kiezen</Text>
+      <Text style={{ color: C.text, fontSize: big ? 18 : 15, fontWeight: F.semi }}>{label}</Text>
+      <Text style={{ color: C.muted, fontSize: big ? 15 : 12 }}>Loc kiezen</Text>
     </Pressable>
   );
 }
 
-/** Een volledige regelaar zoals in de duo-mockup. */
+const card = { backgroundColor: C.panel, borderRadius: R.xl, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border } as const;
+
+/** Volledige regelaar voor de duo-weergave. */
 export function DuoThrottle({ slot }: { slot: number }) {
-  const ids = useEcos((s) => s.locoIds);
   const slotIds = useSlotIds('duo');
   const id = slotIds[slot];
   const loco = useLoco(id);
@@ -85,6 +82,7 @@ export function DuoThrottle({ slot }: { slot: number }) {
   const picked = (
     <LocoPicker
       visible={picker}
+      title={`${label} wisselen`}
       allowClear={id != null}
       onClose={() => setPicker(false)}
       onPick={(p) => {
@@ -98,68 +96,53 @@ export function DuoThrottle({ slot }: { slot: number }) {
     return (
       <View style={{ flex: 1 }}>
         <EmptySlot label={label} onPress={() => setPicker(true)} big />
-        {ids.length ? picked : null}
+        {picked}
       </View>
     );
   }
 
   const vmax = vmaxOf(loco, meta);
-  const moving = loco.speed > 0;
   return (
-    <View style={{ flex: 1, backgroundColor: C.panel, borderRadius: R.lg, borderWidth: 1, borderColor: C.borderSoft, overflow: 'hidden' }}>
-      <View style={{ padding: 18, gap: 14 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <View style={{ backgroundColor: C.yellow, borderRadius: 20, paddingHorizontal: 18, paddingVertical: 6 }}>
-            <Text style={{ color: C.ink, fontSize: 19, fontWeight: F.bold }}>{label}</Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: C.border, borderRadius: 20, paddingHorizontal: 14, height: 40 }}>
-            <View style={{ width: 11, height: 11, borderRadius: 6, backgroundColor: moving ? C.green : C.muted }} />
-            <Text style={{ color: C.text, fontSize: 16, fontWeight: F.semi }}>{moving ? 'Rijdt' : neutral ? 'Neutraal' : 'Actief'}</Text>
-          </View>
+    <View style={[card, { flex: 1, padding: 18, gap: 16 }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <LocoPhoto uri={meta.photo} style={{ width: 96, height: 58 }} rounded={12} />
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text style={{ color: C.muted, fontSize: 13, fontWeight: F.semi }}>{label.toUpperCase()}</Text>
+          <Text style={{ color: C.text, fontSize: 21, fontWeight: F.bold }} numberOfLines={1}>
+            {loco.name}
+          </Text>
+          <Text style={{ color: C.muted, fontSize: 14 }} numberOfLines={1}>
+            {[`${loco.protocol.startsWith('DCC') ? 'DCC' : loco.protocol} ${loco.addr}`, meta.subtitle].filter(Boolean).join(' · ')}
+          </Text>
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Andere loc kiezen" onPress={() => setPicker(true)}>
-          <LocoPhoto uri={meta.photo} style={{ height: 230 }} />
-        </Pressable>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: C.text, fontSize: 30, fontWeight: F.heavy }} numberOfLines={1}>
-              {loco.name}
-            </Text>
-            <Text style={{ color: C.textSoft, fontSize: 17, minHeight: 22 }} numberOfLines={1}>
-              {meta.subtitle || meta.kind || ''}
-            </Text>
-          </View>
-          <View style={{ borderWidth: 1.5, borderColor: C.border, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 6 }}>
-            <Text style={{ color: C.text, fontSize: 16, fontWeight: F.bold }}>
-              {loco.protocol.startsWith('DCC') ? 'DCC' : loco.protocol} {loco.addr}
-            </Text>
-          </View>
-        </View>
-        <View style={{ alignItems: 'center' }}>
-          <Text style={{ color: C.text, fontSize: 64, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
-          <Text style={{ color: C.text, fontSize: 18, marginTop: -6 }}>km/h</Text>
-          <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={260} maxLabel={vmax} variant="yellow" disabled={neutral} />
-        </View>
-        <BrakePanel id={id} compact />
+        <LocoSwitchButton onPress={() => setPicker(true)} />
       </View>
-      <View style={{ borderTopWidth: 1, borderTopColor: C.borderSoft, padding: 18, gap: 14 }}>
-        <DirectionButtons id={id} dir={loco.dir} />
-        <View style={{ flexDirection: 'row', gap: 10 }}>
+
+      <View style={{ alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
+          <Text style={{ color: C.text, fontSize: 56, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
+          <Text style={{ color: C.muted, fontSize: 18, fontWeight: F.medium }}>km/h</Text>
+        </View>
+        <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={250} maxLabel={vmax} disabled={neutral} label={`Snelheid ${loco.name}`} />
+      </View>
+
+      <DirectionButtons id={id} dir={loco.dir} />
+      <BrakePanel id={id} />
+
+      <View style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
           {funcs.slice(0, 4).map((f) => (
             <FunctionTile key={f.n} id={id} f={f} />
           ))}
         </View>
-        {funcs.length > 4 ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setSheet(true)}
-            style={({ pressed }) => [
-              { height: 48, borderRadius: R.md, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 },
-              pressed ? { backgroundColor: C.panel2 } : null,
-            ]}
-          >
-            <Icon name="more" size={22} color={C.text} strokeWidth={3} />
-            <Text style={{ color: C.text, fontSize: 16, fontWeight: F.semi }}>Alle functies (F0–F{funcs[funcs.length - 1].n})</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {funcs.slice(4, 8).map((f) => (
+            <FunctionTile key={f.n} id={id} f={f} />
+          ))}
+        </View>
+        {funcs.length > 8 ? (
+          <Pressable accessibilityRole="button" onPress={() => setSheet(true)} style={({ pressed }) => [{ height: 44, alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.6 } : null]}>
+            <Text style={{ color: C.accent, fontSize: 16, fontWeight: F.semi }}>Alle functies (F0–F{funcs[funcs.length - 1].n})</Text>
           </Pressable>
         ) : null}
       </View>
@@ -183,6 +166,7 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
   const picked = (
     <LocoPicker
       visible={picker}
+      title={`Plek ${slot + 1}: loc wisselen`}
       allowClear={id != null}
       onClose={() => setPicker(false)}
       onPick={(p) => {
@@ -202,21 +186,18 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
   }
   const vmax = vmaxOf(loco, meta);
   return (
-    <View style={{ flex: 1, backgroundColor: C.panel, borderRadius: R.lg, borderWidth: 1, borderColor: loco.speed > 0 ? '#3B5DA8' : C.borderSoft, padding: 10, gap: 8 }}>
-      <Pressable accessibilityRole="button" accessibilityLabel={`${loco.name}, andere loc kiezen`} onPress={() => setPicker(true)} style={{ gap: 6 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={{ backgroundColor: C.yellow, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 }}>
-            <Text style={{ color: C.ink, fontSize: 13, fontWeight: F.heavy }}>{slot + 1}</Text>
-          </View>
-          <Text style={{ color: C.text, fontSize: 16, fontWeight: F.bold, flex: 1 }} numberOfLines={1}>
-            {loco.name}
-          </Text>
-        </View>
-        {!dense ? <LocoPhoto uri={meta.photo} style={{ height: 64 }} rounded={10} /> : null}
-      </Pressable>
+    <View style={[card, { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.accent } : null]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+        <Text style={{ color: C.muted, fontSize: 12, fontWeight: F.bold, width: 16 }}>{slot + 1}</Text>
+        <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi, flex: 1 }} numberOfLines={1}>
+          {loco.name}
+        </Text>
+        <LocoSwitchButton compact onPress={() => setPicker(true)} label={`Plek ${slot + 1}: wissel loc`} />
+      </View>
+      {!dense ? <LocoPhoto uri={meta.photo} style={{ height: 56 }} rounded={10} /> : null}
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
-        <Text style={{ color: C.text, fontSize: 34, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
-        <Text style={{ color: C.textSoft, fontSize: 14 }}>km/h</Text>
+        <Text style={{ color: C.text, fontSize: 30, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
+        <Text style={{ color: C.muted, fontSize: 13 }}>km/h</Text>
       </View>
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wheelSize} showScale={false} label={`Snelheid ${loco.name}`} disabled={neutral} />
@@ -230,10 +211,7 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
           accessibilityRole="button"
           accessibilityLabel="Alle functies"
           onPress={() => setSheet(true)}
-          style={({ pressed }) => [
-            { flex: 1, minHeight: 48, borderRadius: 10, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
-            pressed ? { backgroundColor: C.panel2 } : null,
-          ]}
+          style={({ pressed }) => [{ flex: 1, minHeight: 48, borderRadius: 12, backgroundColor: C.panel2, alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
         >
           <Icon name="more" size={20} color={C.text} strokeWidth={3} />
         </Pressable>
@@ -242,11 +220,9 @@ export function CompactThrottle({ slot, dense, wheelSize = 160 }: { slot: number
         accessibilityRole="button"
         accessibilityLabel={`${loco.name} stoppen`}
         onPress={() => stopLoco(id)}
-        style={({ pressed }) => [
-          { height: 44, borderRadius: 10, backgroundColor: pressed ? C.redDark : C.red, alignItems: 'center', justifyContent: 'center' },
-        ]}
+        style={({ pressed }) => [{ height: 40, borderRadius: 12, backgroundColor: 'rgba(255,69,58,0.16)', alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
       >
-        <Text style={{ color: '#fff', fontSize: 15, fontWeight: F.heavy }}>STOP</Text>
+        <Text style={{ color: C.red, fontSize: 15, fontWeight: F.bold }}>Stop</Text>
       </Pressable>
       {picked}
       <FunctionsSheet id={id} visible={sheet} onClose={() => setSheet(false)} />

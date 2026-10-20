@@ -15,8 +15,8 @@ import { FunctionView, kmh, useFunctions, useLoco, useLocoMeta, useSlots, vmaxOf
 import { C, F } from '../theme';
 
 const S = {
-  chassis: '#2C3036',
-  chassisEdge: '#1A1D21',
+  chassis: '#1C1C1E',
+  chassisEdge: '#2C2C2E',
   screenBg: '#E9EEF4',
   screenHead: '#1D3F73',
   screenText: '#13233F',
@@ -164,7 +164,7 @@ function ScreenSwitchboard() {
   );
 }
 
-function HardKnob({ id, size }: { id: number | null; size: number }) {
+function HardKnob({ id, size, onPick, side }: { id: number | null; size: number; onPick: () => void; side: 'L' | 'R' }) {
   const loco = useLoco(id);
   const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   return (
@@ -176,13 +176,25 @@ function HardKnob({ id, size }: { id: number | null; size: number }) {
         disabled={id == null}
         onPress={() => loco && id != null && setDirection(id, loco.dir === 0 ? 1 : 0)}
         style={({ pressed }) => [
-          { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 16, borderRadius: 24, backgroundColor: '#3A3F46', borderWidth: 1, borderColor: '#4B525B' },
-          pressed ? { backgroundColor: '#4B525B' } : null,
+          { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingHorizontal: 16, borderRadius: 24, backgroundColor: '#2C2C2E', borderWidth: 0 },
+          pressed ? { backgroundColor: '#3A3A3C' } : null,
         ]}
       >
         <Icon name="arrowUp" size={18} color={loco?.dir === 0 ? C.green : '#8A929C'} strokeWidth={3} />
-        <Icon name="arrowDown" size={18} color={loco?.dir === 1 ? C.yellow : '#8A929C'} strokeWidth={3} />
+        <Icon name="arrowDown" size={18} color={loco?.dir === 1 ? C.accent : '#8A929C'} strokeWidth={3} />
         <Text style={{ color: '#E6E9ED', fontSize: 14, fontWeight: F.semi }}>Richting</Text>
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${side === 'L' ? 'Linker' : 'Rechter'} loc wisselen`}
+        onPress={onPick}
+        style={({ pressed }) => [
+          { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 16, borderRadius: 22, backgroundColor: C.accentSoft },
+          pressed ? { opacity: 0.7 } : null,
+        ]}
+      >
+        <Icon name="swap" size={16} color={C.accent} strokeWidth={2.4} />
+        <Text style={{ color: C.accent, fontSize: 14, fontWeight: F.semi }}>Wissel loc</Text>
       </Pressable>
     </View>
   );
@@ -225,11 +237,11 @@ export default function EcosCloneScreen() {
   if (conn !== 'connected') return <NotConnected />;
   const left = slots[0] != null && locos[slots[0]] ? slots[0] : null;
   const right = slots[1] != null && locos[slots[1]] ? slots[1] : null;
-  const knob = width > 1100 ? 210 : width > 900 ? 180 : 150;
+  const knob = width > 1100 ? 190 : 150;
   const go = status === 'GO';
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 18, gap: 16 }}>
+    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
       <View style={{ backgroundColor: S.chassis, borderRadius: 34, borderWidth: 6, borderColor: S.chassisEdge, padding: 18, gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <HwButton label="STOP" color="#C8231F" active={!go} onPress={emergencyStop} />
@@ -237,7 +249,7 @@ export default function EcosCloneScreen() {
           <HwButton label="GO" color="#21A355" active={go} onPress={() => setPower(true)} />
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <HardKnob id={left} size={knob} />
+          <HardKnob id={left} size={knob} side="L" onPick={() => setPicker(0)} />
           <View style={{ flex: 1, backgroundColor: '#0B0C0E', borderRadius: 14, padding: 10 }}>
             <View style={{ backgroundColor: S.screenBg, borderRadius: 6, overflow: 'hidden', minHeight: 360 }}>
               <View style={{ backgroundColor: S.screenHead, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 34, gap: 10 }}>
@@ -281,12 +293,12 @@ export default function EcosCloneScreen() {
               </View>
             </View>
           </View>
-          <HardKnob id={right} size={knob} />
+          <HardKnob id={right} size={knob} side="R" onPick={() => setPicker(1)} />
         </View>
       </View>
       <Text style={{ color: C.muted, fontSize: 15, lineHeight: 21 }}>
         Dit is een nagebouwd ECoS-bedienpaneel met live gegevens uit je centrale. Draai aan de knoppen om te rijden en tik op het scherm voor functies en wissels.
-        De linker en rechter loc zijn dezelfde als in Duo. De echte ECoS kan zijn scherm niet over het netwerk delen.
+        De linker en rechter loc zijn dezelfde als in Duo. Het echte ECoS-scherm via VNC tonen zit er nog niet in.
       </Text>
       <LocoPicker
         visible={picker !== null}

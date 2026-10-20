@@ -4,7 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { AppState, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { BottomNav, Header, ToastHost } from '../components/Chrome';
+import { Sidebar, ToastHost, TopBar } from '../components/Chrome';
 import { connect, onAppActive } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { useSettings } from '../store/settings';
@@ -47,9 +47,13 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'left', 'right', 'bottom']}>
-        <Header />
-        <View style={{ flex: 1 }}>{hydrated ? <Slot /> : null}</View>
-        <BottomNav />
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <Sidebar />
+          <View style={{ flex: 1 }}>
+            <TopBar />
+            <View style={{ flex: 1 }}>{hydrated ? <Slot /> : null}</View>
+          </View>
+        </View>
         <ToastHost />
       </SafeAreaView>
     </SafeAreaProvider>

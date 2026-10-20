@@ -3,7 +3,7 @@ import { PanResponder, View } from 'react-native';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { C } from '../theme';
 
-const THUMB = 34;
+const THUMB = 28;
 
 /**
  * Schuifregelaar (horizontaal of verticaal) met grote touch-zone.
@@ -17,7 +17,7 @@ export function Slider({
   vertical = false,
   length,
   thickness = 14,
-  fill = C.yellow,
+  fill = C.accent,
   gradient,
   label = 'Schuifregelaar',
   disabled,
@@ -99,7 +99,7 @@ export function Slider({
     >
       <View
         style={[
-          { backgroundColor: '#0A1838', borderRadius: thickness / 2, overflow: 'hidden', borderWidth: 1, borderColor: C.borderSoft },
+          { backgroundColor: C.track, borderRadius: thickness / 2, overflow: 'hidden' },
           vertical ? { width: thickness, height: '100%', justifyContent: 'flex-end' } : { height: thickness, width: '100%' },
         ]}
       >

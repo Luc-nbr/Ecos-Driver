@@ -56,7 +56,7 @@ function Chips({ options, value, onChange, labels }: { options: readonly string[
             accessibilityRole="radio"
             accessibilityState={{ checked: on }}
             onPress={() => onChange(on && !labels ? '' : o)}
-            style={{ paddingHorizontal: 16, height: 44, borderRadius: 22, justifyContent: 'center', backgroundColor: on ? C.yellow : C.panel2, borderWidth: 1, borderColor: on ? C.yellow : C.border }}
+            style={{ paddingHorizontal: 16, height: 44, borderRadius: 22, justifyContent: 'center', backgroundColor: on ? C.accent : C.panel2, borderWidth: 1, borderColor: on ? C.accent : C.border }}
           >
             <Text style={{ color: on ? C.ink : C.text, fontSize: 15, fontWeight: F.semi }}>{labels?.[o] ?? o}</Text>
           </Pressable>
@@ -217,9 +217,9 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12 }}
                   >
                     <Text style={{ color: C.text, fontWeight: F.heavy, fontSize: 18, width: 44 }}>F{n}</Text>
-                    <Icon name={o.icon || base.icon} size={26} color={o.hidden ? C.muted : C.yellow} />
+                    <Icon name={o.icon || base.icon} size={26} color={o.hidden ? C.muted : C.accent} />
                     <Text style={{ color: o.hidden ? C.muted : C.text, fontSize: 17, flex: 1 }}>{o.label || base.label}</Text>
-                    {quick.includes(n) ? <Text style={{ color: C.yellow, fontSize: 13, fontWeight: F.bold }}>SNELKNOP</Text> : null}
+                    {quick.includes(n) ? <Text style={{ color: C.accent, fontSize: 13, fontWeight: F.bold }}>SNELKNOP</Text> : null}
                     {(o.moment ?? base.moment) ? <Text style={{ color: C.muted, fontSize: 13 }}>vasthouden</Text> : null}
                     <Icon name={open ? 'chevronDown' : 'chevronRight'} size={20} color={C.muted} />
                   </Pressable>
@@ -243,7 +243,7 @@ export function LocoEditor({ id, visible, onClose }: { id: number | null; visibl
                               accessibilityLabel={`Icoon ${ic}`}
                               accessibilityState={{ checked: on }}
                               onPress={() => setFn(n, { icon: ic })}
-                              style={{ width: 52, height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? C.yellow : C.panel2, borderWidth: 1, borderColor: on ? C.yellow : C.border }}
+                              style={{ width: 52, height: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: on ? C.accent : C.panel2, borderWidth: 1, borderColor: on ? C.accent : C.border }}
                             >
                               <Icon name={ic} size={26} color={on ? C.ink : C.text} />
                             </Pressable>

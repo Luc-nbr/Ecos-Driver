@@ -1,193 +1,137 @@
-// Panelen die op meerdere schermen terugkomen: rem, noodstop, live status, rijwegen.
+// Panelen die op meerdere schermen terugkomen: rem, tellers, wissels en rijwegen.
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { emergencyStop, setBrake, setPower, switchAccessory } from '../store/actions';
+import { setBrake, switchAccessory } from '../store/actions';
 import { useEcos } from '../store/ecos';
-import { C, F, R, shadow } from '../theme';
-import { Icon } from './Icon';
+import { C, F, R } from '../theme';
+import { Icon, IconName } from './Icon';
 import { Slider } from './Slider';
-import { arcPath } from './JogWheel';
 import { Panel, SectionTitle } from './ui';
 
-export function BrakePanel({ id, compact }: { id: number; compact?: boolean }) {
+export function BrakePanel({ id }: { id: number; compact?: boolean }) {
   const brake = useEcos((s) => s.brake[id] ?? 0);
-  if (compact) {
-    return (
-      <View style={{ gap: 2 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: C.text, fontSize: 18, fontWeight: F.semi }}>Rem</Text>
-          <Text style={{ color: C.text, fontSize: 18, fontWeight: F.semi }}>{brake === 0 ? 'Uit' : `${brake}%`}</Text>
-        </View>
-        <Slider value={brake} max={100} onChange={(v) => setBrake(id, v)} gradient={['#E5322D', '#F07A76']} label="Rem" />
-      </View>
-    );
-  }
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-      <View style={{ width: 60, height: 60, borderRadius: 14, borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center', backgroundColor: C.panel2 }}>
-        <Icon name="brake" size={32} color={C.text} />
+    <View style={{ gap: 2 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Icon name="brake" size={18} color={C.muted} />
+          <Text style={{ color: C.textSoft, fontSize: 15, fontWeight: F.semi }}>Rem</Text>
+        </View>
+        <Text style={{ color: brake ? C.red : C.muted, fontSize: 15, fontWeight: F.semi, fontVariant: ['tabular-nums'] }}>{brake === 0 ? 'Uit' : `${brake}%`}</Text>
       </View>
-      <Text style={{ color: C.text, fontSize: 20, fontWeight: F.semi }}>Rem</Text>
-      <View style={{ flex: 1 }}>
-        <Slider value={brake} max={100} onChange={(v) => setBrake(id, v)} gradient={['#E5322D', '#F07A76']} label="Rem" />
-      </View>
-      <Text style={{ color: C.text, fontSize: 20, fontWeight: F.bold, width: 56, textAlign: 'right' }}>
-        {brake === 0 ? 'Uit' : `${brake}%`}
-      </Text>
+      <Slider value={brake} max={100} onChange={(v) => setBrake(id, v)} fill={C.red} thickness={6} label="Rem" />
     </View>
   );
 }
 
-export function EmergencyStopButton() {
-  const stopped = useEcos((s) => s.status === 'STOP');
+/** Klein telvak zoals bovenaan ECoS CAB, maar rustiger. */
+export function StatTile({ value, label, icon, color = C.text, onPress }: { value: string; label: string; icon: IconName; color?: string; onPress?: () => void }) {
   return (
     <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={stopped ? 'Spanning weer aanzetten' : 'Noodstop'}
-      onPress={() => (stopped ? setPower(true) : emergencyStop())}
-      style={({ pressed }) => [{ alignItems: 'center', gap: 10 }, pressed ? { transform: [{ scale: 0.97 }] } : null]}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={`${value} ${label}`}
+      disabled={!onPress}
+      onPress={onPress}
+      style={({ pressed }) => [
+        { flex: 1, minWidth: 140, backgroundColor: C.panel, borderRadius: R.lg, padding: 16, gap: 10, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
+        pressed ? { opacity: 0.8 } : null,
+      ]}
     >
-      <View
-        style={[
-          {
-            width: 108,
-            height: 108,
-            borderRadius: 54,
-            backgroundColor: stopped ? C.green : C.red,
-            borderWidth: 4,
-            borderColor: stopped ? '#7BE8AB' : '#FF6B66',
-            alignItems: 'center',
-            justifyContent: 'center',
-          },
-          shadow,
-        ]}
-      >
-        <Icon name={stopped ? 'play' : 'warning'} size={50} color={stopped ? C.ink : '#fff'} strokeWidth={2.2} fill={stopped ? C.ink : undefined} />
-      </View>
-      <Text style={{ color: C.text, fontSize: 20, fontWeight: F.heavy, letterSpacing: 0.5 }}>{stopped ? 'SPANNING AAN' : 'NOODSTOP'}</Text>
+      <Icon name={icon} size={20} color={color === C.text ? C.muted : color} />
+      <Text style={{ color, fontSize: 34, fontWeight: F.bold, fontVariant: ['tabular-nums'] }}>{value}</Text>
+      <Text style={{ color: C.muted, fontSize: 15, fontWeight: F.medium }}>{label}</Text>
     </Pressable>
   );
 }
 
-function ArcGauge({ value, max, color, text, unit, minLabel, maxLabel, title }: {
-  value: number; max: number; color: string; text: string; unit?: string; minLabel: string; maxLabel: string; title: string;
-}) {
-  const w = 230;
-  const h = 130;
-  const r = 86;
-  const frac = Math.max(0, Math.min(1, value / max));
-  return (
-    <View style={{ flex: 1, minWidth: 200, backgroundColor: C.panel2, borderRadius: R.md, borderWidth: 1, borderColor: C.borderSoft, padding: 14, alignItems: 'center' }}>
-      <Text style={{ color: C.text, fontSize: 18, fontWeight: F.semi }}>{title}</Text>
-      <View style={{ width: w, height: h, marginTop: 6 }}>
-        <Svg width={w} height={h}>
-          <Path d={arcPath(w / 2, h - 12, r, 180, 360)} stroke={C.track} strokeWidth={14} strokeLinecap="round" fill="none" />
-          {frac > 0.01 ? <Path d={arcPath(w / 2, h - 12, r, 180, 180 + 180 * frac)} stroke={color} strokeWidth={14} strokeLinecap="round" fill="none" /> : null}
-        </Svg>
-        <View style={{ position: 'absolute', left: 0, right: 0, bottom: 14, alignItems: 'center' }}>
-          <View style={{ backgroundColor: '#0A1D49', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 6, flexDirection: 'row', alignItems: 'baseline', gap: 4 }}>
-            <Text style={{ color: C.text, fontSize: 28, fontWeight: F.bold }}>{text}</Text>
-            {unit ? <Text style={{ color: C.textSoft, fontSize: 18 }}>{unit}</Text> : null}
-          </View>
-        </View>
-        <Text style={{ position: 'absolute', left: 16, bottom: -8, color: C.textSoft, fontSize: 15 }}>{minLabel}</Text>
-        <Text style={{ position: 'absolute', right: 16, bottom: -8, color: C.textSoft, fontSize: 15 }}>{maxLabel}</Text>
-      </View>
-    </View>
-  );
-}
-
-/** Live status van de ECoS. De ECoS geeft geen stroom/spanning door, dus we tonen wat wel echt is. */
-export function LiveStatusPanel() {
-  const status = useEcos((s) => s.status);
-  const latency = useEcos((s) => s.latency);
-  const total = useEcos((s) => s.locoIds.length);
-  const moving = useEcos((s) => Object.values(s.locos).filter((l) => l.speed > 0).length);
-  const info = useEcos((s) => s.info);
-  const go = status === 'GO';
-  return (
-    <Panel>
-      <SectionTitle
-        icon="chart"
-        title="Live status"
-        right={
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: C.green }} />
-            <Text style={{ color: C.textSoft, fontSize: 15 }}>
-              Live van ESU {info?.model ?? 'ECoS'}
-              {info?.applicationVersion ? ` · firmware ${info.applicationVersion}` : ''}
-            </Text>
-          </View>
-        }
-      />
-      <View style={{ flexDirection: 'row', gap: 14, flexWrap: 'wrap' }}>
-        <ArcGauge title="Baanspanning" value={go ? 1 : 0} max={1} color={go ? C.green : C.red} text={go ? 'Aan' : 'Uit'} minLabel="" maxLabel="" />
-        <ArcGauge title="Rijdende locs" value={moving} max={Math.max(1, total)} color={C.yellow} text={`${moving}`} unit={`/ ${total}`} minLabel="0" maxLabel={`${total}`} />
-        <ArcGauge
-          title="Reactietijd"
-          value={latency ?? 0}
-          max={200}
-          color={latency !== null && latency > 150 ? C.red : C.blue}
-          text={latency === null ? '–' : `${latency}`}
-          unit="ms"
-          minLabel="0"
-          maxLabel="200"
-        />
-      </View>
-    </Panel>
-  );
-}
-
 function TurnoutGlyph({ state, route }: { state: number; route: boolean }) {
-  if (route) return <Icon name="route" size={40} color={C.yellow} />;
+  if (route) return <Icon name="route" size={26} color={C.accent} />;
   return (
-    <Svg width={56} height={40} viewBox="0 0 56 40">
-      <Path d="M4 32 H52" stroke={state === 0 ? C.yellow : '#4A6399'} strokeWidth={5} strokeLinecap="round" fill="none" />
-      <Path d="M4 32 C24 32 32 10 52 6" stroke={state !== 0 ? C.yellow : '#4A6399'} strokeWidth={5} strokeLinecap="round" fill="none" />
+    <Svg width={34} height={24} viewBox="0 0 56 40">
+      <Path d="M4 32 H52" stroke={state === 0 ? C.accent : '#5A5A5F'} strokeWidth={5} strokeLinecap="round" fill="none" />
+      <Path d="M4 32 C24 32 32 10 52 6" stroke={state !== 0 ? C.accent : '#5A5A5F'} strokeWidth={5} strokeLinecap="round" fill="none" />
     </Svg>
   );
 }
 
-/** Rijwegen en wissels uit de ECoS, tik om te schakelen. */
+export function accessoryStateText(type: string, state: number) {
+  if (type === 'ROUTE') return 'Rijweg';
+  return state === 0 ? 'Rechtdoor' : state === 1 ? 'Afbuigend' : `Stand ${state}`;
+}
+
+/** Eén wissel of rijweg als rij; tik om te schakelen. */
+export function AccessoryRow({ id, last }: { id: number; last?: boolean }) {
+  const a = useEcos((s) => s.accessories[id]);
+  if (!a) return null;
+  const route = a.type === 'ROUTE';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${a.name} schakelen`}
+      onPress={() => switchAccessory(id)}
+      style={({ pressed }) => [
+        { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, minHeight: 56 },
+        !last ? { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border } : null,
+        pressed ? { backgroundColor: C.panel2 } : null,
+      ]}
+    >
+      <View style={{ width: 40, alignItems: 'center' }}>
+        <TurnoutGlyph state={a.state} route={route} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ color: C.text, fontSize: 16, fontWeight: F.medium }} numberOfLines={1}>
+          {a.name}
+        </Text>
+        {a.name2 ? (
+          <Text style={{ color: C.muted, fontSize: 13 }} numberOfLines={1}>
+            {a.name2}
+          </Text>
+        ) : null}
+      </View>
+      <Text style={{ color: C.muted, fontSize: 14 }}>{a.addr ? `Adres ${a.addr}` : ''}</Text>
+      <View style={{ minWidth: 96, alignItems: 'flex-end' }}>
+        <View style={{ paddingHorizontal: 10, height: 28, borderRadius: 14, justifyContent: 'center', backgroundColor: route ? C.accentSoft : C.panel2 }}>
+          <Text style={{ color: route ? C.accent : C.textSoft, fontSize: 13, fontWeight: F.semi }}>{route ? 'Instellen' : accessoryStateText(a.type, a.state)}</Text>
+        </View>
+      </View>
+    </Pressable>
+  );
+}
+
+/** Rijwegen en wissels als horizontale strook (overzicht). */
 export function RoutesPanel() {
   const ids = useEcos((s) => s.accessoryIds);
   const acc = useEcos((s) => s.accessories);
   return (
     <Panel>
-      <SectionTitle icon="route" title="Rijwegen en wissels" right={<Text style={{ color: C.textSoft, fontSize: 15 }}>Tik om te schakelen</Text>} />
+      <SectionTitle title="Rijwegen en wissels" right={<Text style={{ color: C.muted, fontSize: 14 }}>Tik om te schakelen</Text>} />
       {ids.length === 0 ? (
-        <Text style={{ color: C.muted, fontSize: 16 }}>Er staan geen wissels of rijwegen in de ECoS.</Text>
+        <Text style={{ color: C.muted, fontSize: 15 }}>Er staan geen wissels of rijwegen in de ECoS.</Text>
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
           {ids.map((id) => {
             const a = acc[id];
             const route = a.type === 'ROUTE';
-            const stateText = route ? 'Rijweg instellen' : a.state === 0 ? 'Recht' : a.state === 1 ? 'Afbuigend' : `Stand ${a.state}`;
             return (
               <Pressable
                 key={id}
                 accessibilityRole="button"
-                accessibilityLabel={`${a.name}: ${stateText}`}
+                accessibilityLabel={`${a.name}: ${accessoryStateText(a.type, a.state)}`}
                 onPress={() => switchAccessory(id)}
                 style={({ pressed }) => [
-                  { width: 190, borderRadius: R.md, overflow: 'hidden', backgroundColor: C.panel2, borderWidth: 1, borderColor: C.border },
-                  pressed ? { opacity: 0.8 } : null,
+                  { width: 170, borderRadius: 14, backgroundColor: C.panel2, padding: 14, gap: 10 },
+                  pressed ? { opacity: 0.75 } : null,
                 ]}
               >
-                <View style={{ height: 84, backgroundColor: '#0A1D49', alignItems: 'center', justifyContent: 'center' }}>
-                  <TurnoutGlyph state={a.state} route={route} />
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 12, gap: 8 }}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ color: C.text, fontSize: 17, fontWeight: F.semi }} numberOfLines={1}>
-                      {a.name}
-                    </Text>
-                    <Text style={{ color: C.textSoft, fontSize: 15 }} numberOfLines={1}>
-                      {stateText}
-                    </Text>
-                  </View>
-                  <Icon name="chevronRight" size={20} color={C.textSoft} />
+                <TurnoutGlyph state={a.state} route={route} />
+                <View>
+                  <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi }} numberOfLines={1}>
+                    {a.name}
+                  </Text>
+                  <Text style={{ color: C.muted, fontSize: 13 }} numberOfLines={1}>
+                    {route ? 'Rijweg instellen' : accessoryStateText(a.type, a.state)}
+                  </Text>
                 </View>
               </Pressable>
             );

@@ -1,17 +1,71 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { NotConnected, useCompactSidebar } from '../components/Chrome';
 import { LocoPicker } from '../components/Dialogs';
 import { Icon } from '../components/Icon';
-import { DirectionButtons, FunctionButton, LocoPhoto, QuickFunction } from '../components/Loco';
-import { NotConnected } from '../components/Chrome';
-import { BrakePanel, EmergencyStopButton, LiveStatusPanel, RoutesPanel } from '../components/Panels';
 import { JogWheel } from '../components/JogWheel';
-import { Button, Panel } from '../components/ui';
-import { selectLoco, setSpeed } from '../store/actions';
+import { DirectionButtons, FunctionButton, LocoPhoto, LocoSwitchButton } from '../components/Loco';
+import { BrakePanel } from '../components/Panels';
+import { Button } from '../components/ui';
+import { metaKey, selectLoco, setSpeed, stopLoco } from '../store/actions';
 import { useEcos } from '../store/ecos';
-import { kmh, useCurrentLocoId, useFunctions, useLoco, useLocoMeta, vmaxOf } from '../store/hooks';
+import { kmh, useCurrentLocoId, useFunctions, useLoco, useLocoMeta, useMode, useRecentLocos, vmaxOf } from '../store/hooks';
+import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
+
+/** Strook met recent bestuurde locs: één tik om te wisselen. */
+function RecentStrip({ current, onMore }: { current: number; onMore: () => void }) {
+  const recent = useRecentLocos();
+  const locos = useEcos((s) => s.locos);
+  const ids = useEcos((s) => s.locoIds);
+  const meta = useSettings((s) => s.meta);
+  const mode = useMode();
+  // eerst recent, dan aanvullen met de rest zodat er altijd iets te kiezen is
+  const list = [...recent, ...ids.filter((i) => !recent.includes(i))].slice(0, 10);
+  if (!list.includes(current)) list.unshift(current);
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingRight: 8 }}>
+      {list.map((id) => {
+        const l = locos[id];
+        if (!l) return null;
+        const on = id === current;
+        return (
+          <Pressable
+            key={id}
+            accessibilityRole="button"
+            accessibilityState={{ selected: on }}
+            accessibilityLabel={`Rijden met ${l.name}`}
+            onPress={() => selectLoco(id)}
+            style={({ pressed }) => [
+              { flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, paddingLeft: 6, paddingRight: 14, borderRadius: 24, backgroundColor: on ? C.accentSoft : C.panel },
+              on ? { borderWidth: 1, borderColor: C.accent } : { borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
+              pressed ? { opacity: 0.75 } : null,
+            ]}
+          >
+            <LocoPhoto uri={meta[metaKey(id, mode)]?.photo} style={{ width: 52, height: 36 }} rounded={18} />
+            <Text style={{ color: on ? C.accent : C.text, fontSize: 15, fontWeight: on ? F.semi : F.medium }} numberOfLines={1}>
+              {l.name}
+            </Text>
+            {l.speed > 0 ? <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: C.green }} /> : null}
+          </Pressable>
+        );
+      })}
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Alle locs"
+        onPress={onMore}
+        style={({ pressed }) => [
+          { flexDirection: 'row', alignItems: 'center', gap: 6, height: 48, paddingHorizontal: 16, borderRadius: 24, backgroundColor: C.panel, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
+          pressed ? { opacity: 0.75 } : null,
+        ]}
+      >
+        <Icon name="list" size={18} color={C.accent} />
+        <Text style={{ color: C.accent, fontSize: 15, fontWeight: F.semi }}>Alle locs</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
 
 export default function DriveScreen() {
   const conn = useEcos((s) => s.conn);
@@ -22,7 +76,9 @@ export default function DriveScreen() {
   const neutral = useEcos((s) => (id != null ? !!s.neutral[id] : false));
   const [picker, setPicker] = useState(false);
   const { width } = useWindowDimensions();
-  const wide = width >= 820;
+  const compactSidebar = useCompactSidebar();
+  const contentW = width - (compactSidebar ? 92 : 250);
+  const wide = contentW >= 820;
 
   if (conn !== 'connected') return <NotConnected />;
   if (!loco || id == null) {
@@ -35,100 +91,82 @@ export default function DriveScreen() {
   }
 
   const vmax = vmaxOf(loco, meta);
-  const quick = (meta.quick?.length ? meta.quick : [0, funcs.find((f) => f.icon === 'horn')?.n ?? 1])
-    .map((n) => funcs.find((f) => f.n === n))
-    .filter((f): f is NonNullable<typeof f> => !!f)
-    .slice(0, 2);
+  const wheel = Math.min(260, Math.max(200, (contentW * (wide ? 0.53 : 1) - 60) / 2));
+  const subtitle = [`${loco.protocol.startsWith('DCC') ? 'DCC' : loco.protocol} ${loco.addr}`, meta.subtitle, meta.kind].filter(Boolean).join(' · ');
 
   const left = (
-    <View style={{ flex: wide ? 1.75 : undefined, gap: 16 }}>
-      <View style={styles.card}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Andere loc kiezen"
-          onPress={() => setPicker(true)}
-          style={({ pressed }) => [styles.cardHead, pressed ? { opacity: 0.9 } : null]}
-        >
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: C.ink, fontSize: 34, fontWeight: F.heavy }} numberOfLines={1}>
-              {loco.name}
-            </Text>
-            <Text style={{ color: C.ink, fontSize: 19, fontWeight: F.medium }}>
-              {loco.protocol.startsWith('DCC') ? 'DCC' : loco.protocol} adres {loco.addr}
-            </Text>
+    <View style={{ flex: wide ? 1.15 : undefined, gap: 16 }}>
+      <View style={[styles.card, { flexDirection: 'row', alignItems: 'center', gap: 16, padding: 14 }]}>
+        <LocoPhoto uri={meta.photo} style={{ width: wide ? 190 : 150, height: wide ? 112 : 90 }} rounded={14} />
+        <View style={{ flex: 1, minWidth: 0, gap: 4 }}>
+          <Text style={{ color: C.text, fontSize: 28, fontWeight: F.bold }} numberOfLines={1}>
+            {loco.name}
+          </Text>
+          <Text style={{ color: C.muted, fontSize: 15 }} numberOfLines={1}>
+            {subtitle}
+          </Text>
+          <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <LocoSwitchButton onPress={() => setPicker(true)} />
           </View>
-          <View style={{ alignItems: 'flex-end', gap: 4 }}>
-            {meta.subtitle ? <Text style={{ color: C.ink, fontSize: 19, fontWeight: F.medium }}>{meta.subtitle}</Text> : null}
-            {meta.kind ? <Text style={{ color: C.ink, fontSize: 17 }}>{meta.kind}</Text> : null}
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(10,26,63,0.12)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 }}>
-              <Icon name="refresh" size={16} color={C.ink} strokeWidth={2.4} />
-              <Text style={{ color: C.ink, fontSize: 14, fontWeight: F.bold }}>Wissel loc</Text>
-            </View>
-          </View>
-        </Pressable>
-        <LocoPhoto uri={meta.photo} style={{ height: wide ? 300 : 240 }} rounded={0} hint />
-        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 20, gap: 12 }}>
-          <View style={{ flex: 1 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10 }}>
-              <Text style={{ color: C.text, fontSize: 96, fontWeight: F.heavy, fontVariant: ['tabular-nums'] }}>{kmh(loco.speed, vmax)}</Text>
-              <Text style={{ color: C.text, fontSize: 32, fontWeight: F.semi }}>km/h</Text>
-            </View>
-            <Text style={{ color: C.textSoft, fontSize: 18 }}>Schaalsnelheid (max {vmax} km/h)</Text>
-            <Text style={{ color: C.muted, fontSize: 15, marginTop: 6 }}>
-              {neutral ? 'Neutraal: kies een rijrichting' : `Rijstap ${loco.speed} van 126 · ${loco.dir === 0 ? 'vooruit' : 'achteruit'}`}
-            </Text>
-            <Text style={{ color: C.muted, fontSize: 15, marginTop: 14 }}>Draai het wiel met de klok mee om sneller te rijden, tegen de klok in om af te remmen.</Text>
-          </View>
-          <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wide ? 280 : 240} maxLabel={vmax} disabled={neutral} />
         </View>
       </View>
 
-      <View style={{ flexDirection: 'row', gap: 16 }}>
-        <Panel style={{ flex: 3, padding: 14 }}>
-          <DirectionButtons id={id} dir={loco.dir} />
-        </Panel>
-        {quick.length ? (
-          <Panel style={{ flex: 2, padding: 14, flexDirection: 'row', alignItems: 'center' }}>
-            {quick.map((f) => (
-              <QuickFunction key={f.n} id={id} f={f} />
-            ))}
-          </Panel>
-        ) : null}
+      <View style={[styles.card, { padding: 18, gap: 16 }]}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+          <JogWheel value={loco.speed} onChange={(v) => setSpeed(id, v)} size={wheel} maxLabel={vmax} disabled={neutral} />
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={{ color: C.text, fontSize: 72, fontWeight: F.bold, fontVariant: ['tabular-nums'], letterSpacing: -1 }}>{kmh(loco.speed, vmax)}</Text>
+            <Text style={{ color: C.muted, fontSize: 20, fontWeight: F.medium, marginTop: -8 }}>km/h</Text>
+            <Text style={{ color: C.muted, fontSize: 14, marginTop: 8 }}>
+              {neutral ? 'Neutraal: kies een rijrichting' : `Rijstap ${loco.speed} / 126`}
+            </Text>
+            <Text style={{ color: C.muted, fontSize: 14 }}>max {vmax} km/h</Text>
+          </View>
+        </View>
+        <DirectionButtons id={id} dir={loco.dir} />
+        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 14 }}>
+          <View style={{ flex: 1 }}>
+            <BrakePanel id={id} />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${loco.name} stoppen`}
+            onPress={() => stopLoco(id)}
+            style={({ pressed }) => [{ height: 46, paddingHorizontal: 20, borderRadius: 14, backgroundColor: 'rgba(255,69,58,0.16)', alignItems: 'center', justifyContent: 'center' }, pressed ? { opacity: 0.7 } : null]}
+          >
+            <Text style={{ color: C.red, fontSize: 16, fontWeight: F.semi }}>Loc stoppen</Text>
+          </Pressable>
+        </View>
       </View>
+      <Text style={{ color: C.muted, fontSize: 13, textAlign: 'center' }}>Draai het wiel met de klok mee om sneller te rijden. Na een zwiep draait het nog even door.</Text>
     </View>
   );
 
   const right = (
-    <Panel style={{ flex: wide ? 1 : undefined, padding: 10, minHeight: wide ? undefined : 420 }}>
-      <Text style={{ color: C.text, fontSize: 19, fontWeight: F.bold, margin: 6 }}>Functies</Text>
+    <View style={[styles.card, { flex: wide ? 1 : undefined, padding: 14, minHeight: wide ? undefined : 420 }]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 2 }}>
+        <Text style={{ color: C.text, fontSize: 20, fontWeight: F.bold }}>Functies</Text>
+        <Text style={{ color: C.muted, fontSize: 13 }}>{funcs.filter((f) => f.on).length} aan</Text>
+      </View>
       <View style={{ flex: 1 }}>
         <ScrollView style={wide ? StyleSheet.absoluteFill : undefined} contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingBottom: 6 }}>
-          {!loco.detailsLoaded ? <Text style={{ color: C.muted, fontSize: 16, padding: 8 }}>Functies laden…</Text> : null}
+          {!loco.detailsLoaded ? <Text style={{ color: C.muted, fontSize: 15, padding: 8 }}>Functies laden…</Text> : null}
           {funcs.map((f) => (
             <FunctionButton key={f.n} id={id} f={f} />
           ))}
         </ScrollView>
       </View>
-    </Panel>
+    </View>
   );
 
   return (
     <>
-      <ScrollView contentContainerStyle={{ padding: 18, gap: 16 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+        <RecentStrip current={id} onMore={() => setPicker(true)} />
         <View style={{ flexDirection: wide ? 'row' : 'column', gap: 16 }}>
           {left}
           {right}
         </View>
-        <View style={{ flexDirection: 'row', gap: 16, alignItems: 'stretch' }}>
-          <Panel style={{ flex: 1, justifyContent: 'center', paddingVertical: 22 }}>
-            <BrakePanel id={id} />
-          </Panel>
-          <Panel style={{ width: 210, alignItems: 'center', justifyContent: 'center' }}>
-            <EmergencyStopButton />
-          </Panel>
-        </View>
-        <LiveStatusPanel />
-        <RoutesPanel />
       </ScrollView>
       <LocoPicker
         visible={picker}
@@ -143,6 +181,5 @@ export default function DriveScreen() {
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: C.panel, borderRadius: R.lg, overflow: 'hidden', borderWidth: 1, borderColor: C.borderSoft },
-  cardHead: { backgroundColor: C.yellow, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 22, paddingVertical: 16, gap: 12 },
+  card: { backgroundColor: C.panel, borderRadius: R.xl, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
 });
