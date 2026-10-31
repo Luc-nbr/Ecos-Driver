@@ -1,6 +1,6 @@
 # ECoS Driver
 
-iPad-app (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS** (50200/50210) in je eigen netwerk.
+App voor iPad en Android (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS** (50200/50210) in je eigen netwerk.
 
 ## Wat kan de app
 
@@ -16,6 +16,43 @@ De app is ingericht als een Apple-app op de iPad: een zijbalk links (staand smal
 - **Bibliotheek**: locs in een tabel (sorteren, zoeken, filteren), toevoegen, aanpassen en verwijderen op de ECoS; foto, omschrijving, soort, topsnelheid en eigen functienamen/-iconen bewaart de app op de iPad. Tweede tabblad: wissels en rijwegen.
 - STOP/GO voor de hele baan staat altijd rechtsboven.
 - **Licht en donker thema**: in Instellingen kies je Automatisch (volgt de iPad), Licht of Donker.
+
+## Op je Android-tablet of -telefoon zetten
+
+Voor Android heb je geen Mac, geen betaald account en geen Play Store nodig. Je bouwt een `.apk` en zet die zelf op je toestel. Hij blijft gewoon werken; niets verloopt na 7 dagen.
+
+**1. De app laten bouwen (.apk)**
+
+*Optie 1: GitHub Actions.* Bouwt op een Linux-machine, dat kost bij een openbare repo niets.
+
+1. Ga op github.com naar deze repo › **Actions** › **Android-app bouwen**.
+2. Open de laatste groene run (met vinkje). Wil je een nieuwe build? Tik op **Run workflow** en kies je branch. Na elke wijziging aan de app bouwt GitHub ook vanzelf.
+3. Download onderaan bij *Artifacts* het bestand **ECoS-Driver-apk** en pak de zip uit. Daarin zit `ECoS-Driver.apk`.
+
+*Optie 2: Codemagic.* Zelfde account als bij de iPad (zie hieronder): kies bij **Start new build** de workflow **Android-app (.apk)** en download na ongeveer 15 minuten bij *Artifacts* het bestand **ECoS-Driver.apk**.
+
+*Optie 3: EAS.* Met een gratis account op [expo.dev](https://expo.dev):
+
+```bash
+npm install
+npx eas-cli@latest login
+npx eas-cli@latest build --profile preview --platform android
+```
+
+Je krijgt een link en QR-code; open die op je toestel om de `.apk` te downloaden.
+
+**2. Installeren**
+
+1. Zet `ECoS-Driver.apk` op je toestel: download hem daar direct (open de GitHub-pagina in de browser van je tablet), of kopieer hem via een kabel, Google Drive of e-mail.
+2. Tik op het bestand. Android vraagt of je apps uit deze bron wilt toestaan (*Onbekende apps installeren*): zet dat aan voor je browser of bestandsbeheer en tik op **Installeren**.
+3. Waarschuwt Google Play Protect dat de app onbekend is, kies dan *Toch installeren*.
+4. Een nieuwere versie installeer je op dezelfde manier over de oude heen. Je centrales, instellingen en locs blijven bewaard.
+
+**Eerste keer openen**
+
+- Vraagt Android om toegang tot het **lokale netwerk** of **apparaten in de buurt**, kies dan *Sta toe*. Zonder die toestemming kan de app de ECoS niet bereiken. Je kunt het later aanzetten via *Instellingen › Apps › ECoS Driver › Rechten*.
+- Ga naar **Centrales**, vul het IP-adres van je ECoS in en tik op **Verbinden**. Of probeer eerst de **Demo-modus**.
+- De app is ontworpen voor een tablet. Op een telefoon werkt hij ook, maar Duo en Multi zijn daar krap; liggend gaat het het best.
 
 ## Op je iPad zetten
 
@@ -97,7 +134,7 @@ Met een gratis Apple ID werkt de app 7 dagen. Daarna voer je het commando opnieu
 
 ## Verbinden
 
-1. Zet de iPad op hetzelfde netwerk als de ECoS.
+1. Zet de iPad of je Android-toestel op hetzelfde netwerk als de ECoS.
 2. Zoek het IP-adres op de ECoS op onder *Setup › Netwerk*.
 3. Vul het in bij **Instellingen** in de app (poort 15471) en tik op **Verbinden**.
 
@@ -109,7 +146,7 @@ npm run sim     # nep-ECoS op poort 15471, nep-VNC-scherm op 5900 en loc-plaatje
 npm run web     # app in de browser (alleen de demo-modus werkt in een browser)
 ```
 
-Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je de echte TCP-verbinding vanaf de iPad.
+Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je de echte TCP-verbinding vanaf de iPad of je Android-toestel.
 
 ## Opbouw
 
@@ -123,7 +160,7 @@ Met `npm run sim` vul je in de app het IP-adres van je computer in. Zo test je d
 | `src/store/` | app-state (zustand) en acties; instellingen worden bewaard op de iPad |
 | `src/app/` | schermen (Expo Router): Centrales, Overzicht, Rijden, Duo, Multi, ECoS-scherm, Bibliotheek, Instellingen |
 | `src/components/` | knoppen, snelheidsknop, schuifregelaars, panelen |
-| `codemagic.yaml`, `.github/workflows/` | gratis bouwen van de iPad-app in de cloud |
+| `codemagic.yaml`, `.github/workflows/` | gratis bouwen van de iPad-app (.ipa) en de Android-app (.apk) in de cloud |
 
 ## Goed om te weten
 

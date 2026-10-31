@@ -1,0 +1,64 @@
+# Bouwt een Android-app (.apk) op een gratis Linux-machine van GitHub.
+# Die .apk zet je rechtstreeks op je Android-tablet of -telefoon; je hebt geen Google-account of Play Store nodig.
+name: Android-app bouwen
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/**'
+      - 'assets/**'
+      - 'app.json'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/android-apk.yml'
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Packages installeren
+        run: npm ci
+
+      - name: Protocoltests
+        run: npm test
+
+      - name: Android-project genereren
+        run: npx expo prebuild --platform android --clean
+        env:
+          CI: 1
+
+      - name: App bouwen
+        working-directory: android
+        # Alleen de processortypes van echte toestellen; dat houdt de .apk klein.
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+
+      - name: .apk klaarzetten
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk "$RUNNER_TEMP/ECoS-Driver.apk"
+          ls -lh "$RUNNER_TEMP/ECoS-Driver.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ECoS-Driver-apk
+          path: ${{ runner.temp }}/ECoS-Driver.apk
+          retention-days: 30

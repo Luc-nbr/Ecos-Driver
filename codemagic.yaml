@@ -1,5 +1,5 @@
-# Gratis bouwen op Codemagic (codemagic.io): 500 Mac-bouwminuten per maand, geen betaalkaart nodig.
-# Maakt een onondertekende iPad-app (.ipa) die je met Sideloadly en een gratis Apple ID installeert.
+# Gratis bouwen op Codemagic (codemagic.io): 500 bouwminuten per maand, geen betaalkaart nodig.
+# ipad-ipa: onondertekende iPad-app (.ipa) voor Sideloadly. android-apk: Android-app (.apk) om direct te installeren.
 workflows:
   ipad-ipa:
     name: iPad-app (voor Sideloadly)
@@ -35,3 +35,29 @@ workflows:
           cd build && zip -qry ECoS-Driver.ipa Payload
     artifacts:
       - build/ECoS-Driver.ipa
+
+  # Maakt een Android-app (.apk) die je rechtstreeks op je Android-tablet of -telefoon zet.
+  android-apk:
+    name: Android-app (.apk)
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      node: 22
+      java: 17
+    scripts:
+      - name: Packages installeren
+        script: npm ci
+      - name: Protocoltests
+        script: npm test
+      - name: Android-project genereren
+        script: CI=1 npx expo prebuild --platform android --clean
+      - name: App bouwen
+        script: |
+          cd android
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+      - name: .apk klaarzetten
+        script: |
+          mkdir -p build
+          cp android/app/build/outputs/apk/release/app-release.apk build/ECoS-Driver.apk
+    artifacts:
+      - build/ECoS-Driver.apk

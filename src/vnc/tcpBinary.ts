@@ -1,4 +1,5 @@
 import TcpSocket from 'react-native-tcp-socket';
+import { ensureLocalNetworkAccess } from '../lib/localNetwork';
 import type { BinaryTransport } from './rfb';
 
 /** Binaire TCP-verbinding (voor VNC) via react-native-tcp-socket. */
@@ -10,7 +11,8 @@ export class TcpBinaryTransport implements BinaryTransport {
 
   constructor(private host: string, private port: number, private timeoutMs = 6000) {}
 
-  open(): Promise<void> {
+  async open(): Promise<void> {
+    await ensureLocalNetworkAccess();
     return new Promise((resolve, reject) => {
       let settled = false;
       const timer = setTimeout(() => {

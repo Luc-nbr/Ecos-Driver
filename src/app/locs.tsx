@@ -14,6 +14,7 @@ import { useEcos } from '../store/ecos';
 import { useMode } from '../store/hooks';
 import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
+import { THE_DEVICE } from '../lib/device';
 
 type Tab = 'locs' | 'acc';
 type Sort = 'naam' | 'adres' | 'protocol';
@@ -193,7 +194,7 @@ export default function LibraryScreen() {
               })}
               {list.length === 0 ? <Text style={{ color: C.muted, fontSize: 16, padding: 20 }}>Geen locs gevonden.</Text> : null}
             </View>
-            <Text style={{ color: C.muted, fontSize: 13 }}>Tik op een loc om te rijden. Naam, adres en protocol worden op de ECoS opgeslagen; foto en extra gegevens op de iPad.</Text>
+            <Text style={{ color: C.muted, fontSize: 13 }}>Tik op een loc om te rijden. Naam, adres en protocol worden op de ECoS opgeslagen; foto en extra gegevens op {THE_DEVICE}.</Text>
           </>
         ) : (
           <View style={{ backgroundColor: C.panel, borderRadius: R.lg, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, borderColor: C.border }}>

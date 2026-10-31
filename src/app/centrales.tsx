@@ -8,6 +8,7 @@ import { connect, disconnect } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { Profile, useSettings } from '../store/settings';
 import { C, F, R, themed } from '../theme';
+import { LOCAL_NETWORK_HINT, THE_DEVICE } from '../lib/device';
 
 const input = themed(() => ({ backgroundColor: C.panel2, borderRadius: 12, color: C.text, fontSize: 17, paddingHorizontal: 14, height: 48 }) as const);
 
@@ -179,7 +180,7 @@ export default function CentralesScreen() {
       {connected || busy ? <Button title="Verbinding verbreken" icon="close" kind="ghost" onPress={() => disconnect()} style={{ alignSelf: 'flex-start' }} /> : null}
 
       <Text style={{ color: C.muted, fontSize: 13, lineHeight: 19 }}>
-        Zet de iPad op hetzelfde netwerk als de ECoS. Vraagt iOS om toegang tot het lokale netwerk, kies dan Sta toe. De app praat met de ECoS via TCP-poort 15471.
+        Zet {THE_DEVICE} op hetzelfde netwerk als de ECoS. {LOCAL_NETWORK_HINT} De app praat met de ECoS via TCP-poort 15471.
       </Text>
 
       {editing ? <ProfileSheet profile={editing} onClose={() => setEditing(null)} /> : null}

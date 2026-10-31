@@ -4,6 +4,7 @@ import { Segmented, Toggle } from '../components/ui';
 import { useEcos } from '../store/ecos';
 import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
+import { DEVICE, THE_DEVICE } from '../lib/device';
 
 function Group({ title, children, footer }: { title: string; children: React.ReactNode; footer?: string }) {
   return (
@@ -38,7 +39,7 @@ export default function SettingsScreen() {
   const connected = useEcos((x) => x.conn === 'connected');
   return (
     <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 22, maxWidth: 820 }}>
-      <Group title="Weergave" footer="Automatisch volgt de instelling van je iPad (licht of donker).">
+      <Group title="Weergave" footer={`Automatisch volgt de instelling van je ${DEVICE} (licht of donker).`}>
         <View style={{ padding: 12 }}>
           <Segmented
             label="Thema"
@@ -57,7 +58,7 @@ export default function SettingsScreen() {
         <Row title="Automatisch verbinden" sub="Bij openen verbinden met de laatst gebruikte centrale (of demo)">
           <Toggle value={s.autoConnect} onChange={(v) => s.set({ autoConnect: v })} label="Automatisch verbinden" />
         </Row>
-        <Row title="Scherm aan houden" sub="De iPad gaat niet op slot zolang je verbonden bent" last>
+        <Row title="Scherm aan houden" sub={`${THE_DEVICE[0].toUpperCase()}${THE_DEVICE.slice(1)} gaat niet op slot zolang je verbonden bent`} last>
           <Toggle value={s.keepAwake} onChange={(v) => s.set({ keepAwake: v })} label="Scherm aan houden" />
         </Row>
       </Group>

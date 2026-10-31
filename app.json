@@ -31,7 +31,13 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.ACCESS_WIFI_STATE",
+        "android.permission.ACCESS_LOCAL_NETWORK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -43,7 +49,16 @@
         "expo-image-picker",
         {
           "photosPermission": "Kies een foto van je loc voor de locbibliotheek.",
-          "cameraPermission": "Maak een foto van je loc voor de locbibliotheek."
+          "cameraPermission": "Maak een foto van je loc voor de locbibliotheek.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],

@@ -1,4 +1,5 @@
 import TcpSocket from 'react-native-tcp-socket';
+import { ensureLocalNetworkAccess } from '../lib/localNetwork';
 import type { Transport } from './transport';
 
 /** Echte TCP-verbinding naar de ECoS (iOS/Android via react-native-tcp-socket). */
@@ -10,7 +11,8 @@ export class TcpTransport implements Transport {
 
   constructor(private host: string, private port: number, private timeoutMs = 6000) {}
 
-  open(): Promise<void> {
+  async open(): Promise<void> {
+    await ensureLocalNetworkAccess();
     return new Promise((resolve, reject) => {
       let settled = false;
       const timer = setTimeout(() => {
