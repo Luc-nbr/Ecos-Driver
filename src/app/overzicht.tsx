@@ -10,9 +10,11 @@ import { useEcos } from '../store/ecos';
 import { kmh, useMode, useRecentLocos, vmaxOf } from '../store/hooks';
 import { useActiveProfile, useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
+import { useGutter } from '../lib/layout';
 
 export default function OverviewScreen() {
   const conn = useEcos((s) => s.conn);
+  const gutter = useGutter();
   const mode = useMode();
   const info = useEcos((s) => s.info);
   const status = useEcos((s) => s.status);
@@ -32,7 +34,7 @@ export default function OverviewScreen() {
   const shown = (recent.length ? recent : locoIds).slice(0, 8);
 
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+    <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: 16 }}>
       <Text style={{ color: C.muted, fontSize: 16 }}>
         {mode === 'demo' ? 'Demo-baan' : profile.name} · ESU {info?.model ?? 'ECoS'}
         {info?.applicationVersion ? ` · firmware ${info.applicationVersion}` : ''}

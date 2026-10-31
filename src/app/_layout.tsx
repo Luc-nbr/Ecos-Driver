@@ -4,7 +4,8 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect, useState } from 'react';
 import { AppState, View, useColorScheme } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Sidebar, ToastHost, TopBar } from '../components/Chrome';
+import { BottomTabs, Sidebar, ToastHost, TopBar } from '../components/Chrome';
+import { usePhone } from '../lib/layout';
 import { connect, onAppActive } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { useSettings } from '../store/settings';
@@ -29,6 +30,7 @@ export default function RootLayout() {
   // kleuren bijwerken vóór het tekenen; de key hieronder tekent alles opnieuw
   applyTheme(theme);
   const connected = useEcos((s) => s.conn === 'connected');
+  const phone = usePhone();
 
   // bij openen automatisch verbinden met de laatst gebruikte ECoS
   useEffect(() => {
@@ -53,10 +55,11 @@ export default function RootLayout() {
       <StatusBar style={theme === 'light' ? 'dark' : 'light'} />
       <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'left', 'right', 'bottom']}>
         <View key={theme} style={{ flex: 1, flexDirection: 'row' }}>
-          <Sidebar />
+          {phone ? null : <Sidebar />}
           <View style={{ flex: 1 }}>
             <TopBar />
             <View style={{ flex: 1 }}>{hydrated ? <Slot /> : null}</View>
+            {phone ? <BottomTabs /> : null}
           </View>
         </View>
         <ToastHost />

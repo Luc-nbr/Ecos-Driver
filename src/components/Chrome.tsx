@@ -1,11 +1,13 @@
 // Zijbalk, bovenbalk en meldingen rond alle schermen (Apple-stijl splitweergave).
 import { router, usePathname } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { usePhone } from '../lib/layout';
 import { emergencyStop, setPower } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { useActiveProfile } from '../store/settings';
 import { C, F, R, shadow } from '../theme';
+import { Sheet } from './Dialogs';
 import { AppLogo, Icon, IconName } from './Icon';
 
 export const NAV: { path: string; label: string; icon: IconName; group?: string }[] = [
@@ -132,28 +134,45 @@ export function TopBar() {
   const info = useEcos((s) => s.info);
   const latency = useEcos((s) => s.latency);
   const { text, color, connected } = useConnText();
+  const conn = useEcos((s) => s.conn);
   const stopped = connected && status === 'STOP';
+  const phone = usePhone();
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingTop: 14, paddingBottom: 10, gap: 14 }}>
-      <Text style={{ flex: 1, color: C.text, fontSize: 32, fontWeight: F.bold, letterSpacing: 0.3 }} numberOfLines={1}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: phone ? 12 : 24, paddingTop: phone ? 8 : 14, paddingBottom: phone ? 8 : 10, gap: phone ? 8 : 14 }}>
+      <Text style={{ flex: 1, color: C.text, fontSize: phone ? 24 : 32, fontWeight: F.bold, letterSpacing: 0.3 }} numberOfLines={1}>
         {title}
       </Text>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: C.panel }}>
-        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
-        <Text style={{ color: C.textSoft, fontSize: 14, fontWeight: F.medium }}>
-          {connected && info?.model ? `${info.model} · ` : ''}
-          {text}
-          {connected && latency !== null ? ` · ${latency} ms` : ''}
-        </Text>
-      </View>
+      {phone ? (
+        // op de telefoon alleen een stip en de reactietijd; tik voor de centrales
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`${text}: naar Centrales`}
+          onPress={() => router.navigate('/centrales')}
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 32, paddingHorizontal: 10, borderRadius: 16, backgroundColor: C.panel }}
+        >
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+          <Text style={{ color: C.textSoft, fontSize: 13, fontWeight: F.medium }} numberOfLines={1}>
+            {connected ? (latency !== null ? `${latency} ms` : 'OK') : conn === 'disconnected' ? 'Offline' : '…'}
+          </Text>
+        </Pressable>
+      ) : (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 36, paddingHorizontal: 12, borderRadius: 18, backgroundColor: C.panel }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+          <Text style={{ color: C.textSoft, fontSize: 14, fontWeight: F.medium }}>
+            {connected && info?.model ? `${info.model} · ` : ''}
+            {text}
+            {connected && latency !== null ? ` · ${latency} ms` : ''}
+          </Text>
+        </View>
+      )}
       {connected ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={stopped ? 'Spanning weer aanzetten (GO)' : 'Noodstop: alle locs stoppen'}
           onPress={() => (stopped ? setPower(true) : emergencyStop())}
           style={({ pressed }) => [
-            { flexDirection: 'row', alignItems: 'center', gap: 8, height: 44, paddingHorizontal: 20, borderRadius: 22, backgroundColor: stopped ? C.green : C.red },
+            { flexDirection: 'row', alignItems: 'center', gap: phone ? 6 : 8, height: phone ? 40 : 44, paddingHorizontal: phone ? 14 : 20, borderRadius: 22, backgroundColor: stopped ? C.green : C.red },
             pressed ? { opacity: 0.8 } : null,
           ]}
         >
@@ -161,6 +180,85 @@ export function TopBar() {
           <Text style={{ color: stopped ? C.ink : '#fff', fontSize: 17, fontWeight: F.bold, letterSpacing: 0.5 }}>{stopped ? 'GO' : 'STOP'}</Text>
         </Pressable>
       ) : null}
+    </View>
+  );
+}
+
+/** Tabs onderin op de telefoon; de rest zit achter "Meer". */
+const PHONE_TABS = ['/', '/duo', '/multi', '/locs'];
+
+export function BottomTabs() {
+  const path = usePathname();
+  const [more, setMore] = useState(false);
+  const { text, color } = useConnText();
+  const profile = useActiveProfile();
+  const mode = useEcos((s) => s.mode);
+  const tabs = NAV.filter((n) => PHONE_TABS.includes(n.path));
+  const rest = NAV.filter((n) => !PHONE_TABS.includes(n.path));
+  const moreActive = rest.some((n) => isActive(n.path, path));
+  // liggend is de hoogte schaars: alleen iconen
+  const { height } = useWindowDimensions();
+  const iconsOnly = height < 500;
+  const go = (p: string) => {
+    setMore(false);
+    router.navigate(p as never);
+  };
+
+  const tab = (key: string, label: string, icon: IconName, active: boolean, onPress: () => void) => (
+    <Pressable
+      key={key}
+      accessibilityRole="tab"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={label}
+      onPress={onPress}
+      style={({ pressed }) => [{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: 2, paddingVertical: iconsOnly ? 4 : 6 }, pressed ? { opacity: 0.6 } : null]}
+    >
+      <View style={{ paddingHorizontal: 16, paddingVertical: 3, borderRadius: 14, backgroundColor: active ? C.accentSoft : 'transparent' }}>
+        <Icon name={icon} size={22} color={active ? C.accent : C.textSoft} strokeWidth={2} />
+      </View>
+      {iconsOnly ? null : (
+        <Text style={{ color: active ? C.accent : C.muted, fontSize: 11, fontWeight: active ? F.semi : F.medium }} numberOfLines={1}>
+          {label}
+        </Text>
+      )}
+    </Pressable>
+  );
+
+  return (
+    <View style={{ flexDirection: 'row', backgroundColor: C.sidebar, borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.border, paddingHorizontal: 4 }}>
+      {tabs.map((n) => tab(n.path, n.label, n.icon, isActive(n.path, path) && !more, () => go(n.path)))}
+      {tab('meer', 'Meer', 'more', moreActive || more, () => setMore(true))}
+      <Sheet visible={more} onClose={() => setMore(false)} maxWidth={420}>
+        <Text style={{ color: C.text, fontSize: 20, fontWeight: F.bold }}>Meer</Text>
+        <View style={{ backgroundColor: C.panel2, borderRadius: R.lg, overflow: 'hidden' }}>
+          {rest.map((n, i) => {
+            const active = isActive(n.path, path);
+            return (
+              <Pressable
+                key={n.path}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                onPress={() => go(n.path)}
+                style={({ pressed }) => [
+                  { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 14, height: 52 },
+                  i > 0 ? { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.border } : null,
+                  pressed ? { backgroundColor: C.panelHi } : null,
+                ]}
+              >
+                <Icon name={n.icon} size={22} color={active ? C.accent : C.textSoft} strokeWidth={2} />
+                <Text style={{ flex: 1, color: active ? C.accent : C.text, fontSize: 17, fontWeight: active ? F.semi : F.medium }}>{n.label}</Text>
+                <Icon name="chevronRight" size={18} color={C.muted} />
+              </Pressable>
+            );
+          })}
+        </View>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 }}>
+          <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
+          <Text style={{ color: C.muted, fontSize: 14 }} numberOfLines={1}>
+            {mode === 'demo' ? 'Demo-baan' : profile.name} · {text}
+          </Text>
+        </View>
+      </Sheet>
     </View>
   );
 }
@@ -174,6 +272,7 @@ export function ToastHost() {
         style={[
           {
             maxWidth: 560,
+            marginHorizontal: 16,
             paddingHorizontal: 18,
             paddingVertical: 12,
             borderRadius: 22,

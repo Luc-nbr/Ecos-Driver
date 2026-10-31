@@ -1,6 +1,6 @@
 # ECoS Driver
 
-App voor iPad en Android (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS** (50200/50210) in je eigen netwerk.
+App voor iPad, Android-tablet en Android-telefoon (React Native / Expo) om je modeltreinen te besturen via een **ESU ECoS** (50200/50210) in je eigen netwerk.
 
 ## Wat kan de app
 
@@ -52,7 +52,7 @@ Je krijgt een link en QR-code; open die op je toestel om de `.apk` te downloaden
 
 - Vraagt Android om toegang tot het **lokale netwerk** of **apparaten in de buurt**, kies dan *Sta toe*. Zonder die toestemming kan de app de ECoS niet bereiken. Je kunt het later aanzetten via *Instellingen › Apps › ECoS Driver › Rechten*.
 - Ga naar **Centrales**, vul het IP-adres van je ECoS in en tik op **Verbinden**. Of probeer eerst de **Demo-modus**.
-- De app is ontworpen voor een tablet. Op een telefoon werkt hij ook, maar Duo en Multi zijn daar krap; liggend gaat het het best.
+- Op een **telefoon** past de app zich aan: onderin een tabbalk (Rijden, Duo, Multi, Bibliotheek en *Meer* voor Centrales, Overzicht, ECoS-scherm en Instellingen). Rijden toont meter en duimwiel naast elkaar met de knoppen eronder, Duo zet twee compacte regelaars naast elkaar en Multi toont de tien locs in rijen van twee om door te scrollen. Staand werkt het het prettigst.
 
 ## Op je iPad zetten
 

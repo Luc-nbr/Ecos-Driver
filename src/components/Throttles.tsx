@@ -103,8 +103,8 @@ export function DuoThrottle({ slot }: { slot: number }) {
 }
 
 /** Compacte regelaar voor de multi-weergave (2 rijen van 5). */
-export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean }) {
-  const slotIds = useSlotIds('multi');
+export function CompactThrottle({ slot, dense, kind = 'multi' }: { slot: number; dense?: boolean; kind?: 'duo' | 'multi' }) {
+  const slotIds = useSlotIds(kind);
   const id = slotIds[slot];
   const loco = useLoco(id);
   const meta = useLocoMeta(id);
@@ -118,11 +118,11 @@ export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean
   const picked = (
     <LocoPicker
       visible={picker}
-      title={`Plek ${slot + 1}: loc wisselen`}
+      title={`${kind === 'duo' ? 'Loc' : 'Plek'} ${slot + 1}: loc wisselen`}
       allowClear={id != null}
       onClose={() => setPicker(false)}
       onPick={(p) => {
-        setSlot('multi', slot, p);
+        setSlot(kind, slot, p);
         setPicker(false);
       }}
     />
@@ -131,7 +131,7 @@ export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean
   if (id == null || !loco) {
     return (
       <View style={{ flex: 1 }}>
-        <EmptySlot label={`Plek ${slot + 1}`} onPress={() => setPicker(true)} />
+        <EmptySlot label={`${kind === 'duo' ? 'Loc' : 'Plek'} ${slot + 1}`} onPress={() => setPicker(true)} />
         {picked}
       </View>
     );
@@ -143,7 +143,12 @@ export function CompactThrottle({ slot, dense }: { slot: number; dense?: boolean
   const gauge = Math.max(96, Math.min(dense ? 150 : 170, inner - wheelW - 8));
   const btnW = Math.floor((inner - 12) / 3);
   return (
-    <View style={[card(), { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.blue } : null]} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
+    <View
+      // eigen key: na het kiezen van een loc opnieuw opmeten (anders blijft de breedte 0 en ontbreken meter en wiel)
+      key={`loc-${id}`}
+      style={[card(), { flex: 1, borderRadius: R.lg, padding: 10, gap: 8 }, loco.speed > 0 ? { borderColor: C.blue } : null]}
+      onLayout={(e) => setW(e.nativeEvent.layout.width)}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
         <Text style={{ color: C.muted, fontSize: 12, fontWeight: F.bold, width: 16 }}>{slot + 1}</Text>
         <View style={{ flex: 1, minWidth: 0 }}>

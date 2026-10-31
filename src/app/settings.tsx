@@ -5,6 +5,7 @@ import { useEcos } from '../store/ecos';
 import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
 import { DEVICE, THE_DEVICE } from '../lib/device';
+import { useGutter } from '../lib/layout';
 
 function Group({ title, children, footer }: { title: string; children: React.ReactNode; footer?: string }) {
   return (
@@ -37,8 +38,9 @@ export default function SettingsScreen() {
   const s = useSettings();
   const info = useEcos((x) => x.info);
   const connected = useEcos((x) => x.conn === 'connected');
+  const gutter = useGutter();
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 22, maxWidth: 820 }}>
+    <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: 22, maxWidth: 820 }}>
       <Group title="Weergave" footer={`Automatisch volgt de instelling van je ${DEVICE} (licht of donker).`}>
         <View style={{ padding: 12 }}>
           <Segmented

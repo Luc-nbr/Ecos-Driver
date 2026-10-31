@@ -15,6 +15,7 @@ import { C, F } from '../theme';
 import { Segmented } from '../components/ui';
 import { VncView } from '../components/VncView';
 import { useSettings } from '../store/settings';
+import { useGutter } from '../lib/layout';
 
 const S = {
   chassis: '#1C1C1E',
@@ -229,6 +230,7 @@ function HwButton({ label, color, onPress, active }: { label: string; color: str
 
 export default function EcosCloneScreen() {
   const conn = useEcos((s) => s.conn);
+  const gutter = useGutter();
   const scrollEnabled = useScrollEnabled();
   const status = useEcos((s) => s.status);
   const info = useEcos((s) => s.info);
@@ -242,36 +244,12 @@ export default function EcosCloneScreen() {
   if (conn !== 'connected') return <NotConnected />;
   const left = slots[0] != null && locos[slots[0]] ? slots[0] : null;
   const right = slots[1] != null && locos[slots[1]] ? slots[1] : null;
-  const knob = width > 1100 ? 190 : 150;
+  const narrow = width < 600;
+  const knob = width > 1100 ? 190 : narrow ? 140 : 150;
   const go = status === 'GO';
-
-  return (
-    <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
-      <View style={{ maxWidth: 520 }}>
-        <Segmented
-          label="Weergave ECoS-scherm"
-          value={view}
-          onChange={(v) => setView(v)}
-          options={[
-            { value: 'vnc', label: 'Live scherm (VNC)', icon: 'device' },
-            { value: 'replica', label: 'Nagebouwd', icon: 'grid' },
-          ]}
-        />
-      </View>
-      {view === 'vnc' ? (
-        <VncView maxHeight={Math.max(260, height - 300)} />
-      ) : (
-        <>
-      <View style={{ backgroundColor: S.chassis, borderRadius: 34, borderWidth: 6, borderColor: S.chassisEdge, padding: 18, gap: 14 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-          <HwButton label="STOP" color="#C8231F" active={!go} onPress={emergencyStop} />
-          <Text style={{ color: '#AEB5BE', fontSize: 16, fontWeight: F.bold, letterSpacing: 3 }}>ESU {info?.model ?? 'ECoS'}</Text>
-          <HwButton label="GO" color="#21A355" active={go} onPress={() => setPower(true)} />
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-          <HardKnob id={left} size={knob} side="L" onPick={() => setPicker(0)} />
-          <View style={{ flex: 1, backgroundColor: '#0B0C0E', borderRadius: 14, padding: 10 }}>
-            <View style={{ backgroundColor: S.screenBg, borderRadius: 6, overflow: 'hidden', minHeight: 360 }}>
+  const screenView = (
+          <View style={[{ backgroundColor: '#0B0C0E', borderRadius: 14, padding: 10 }, narrow ? null : { flex: 1 }]}>
+            <View style={{ backgroundColor: S.screenBg, borderRadius: 6, overflow: 'hidden', minHeight: narrow ? 300 : 360 }}>
               <View style={{ backgroundColor: S.screenHead, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 34, gap: 10 }}>
                 <View style={{ backgroundColor: go ? '#21A355' : '#C8231F', paddingHorizontal: 8, borderRadius: 4 }}>
                   <Text style={{ color: '#fff', fontSize: 13, fontWeight: F.heavy }}>{go ? 'GO' : 'STOP'}</Text>
@@ -313,8 +291,49 @@ export default function EcosCloneScreen() {
               </View>
             </View>
           </View>
-          <HardKnob id={right} size={knob} side="R" onPick={() => setPicker(1)} />
+  );
+
+  return (
+    <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: 16 }}>
+      <View style={{ maxWidth: 520 }}>
+        <Segmented
+          label="Weergave ECoS-scherm"
+          value={view}
+          onChange={(v) => setView(v)}
+          options={[
+            { value: 'vnc', label: 'Live scherm (VNC)', icon: 'device' },
+            { value: 'replica', label: 'Nagebouwd', icon: 'grid' },
+          ]}
+        />
+      </View>
+      {view === 'vnc' ? (
+        <VncView maxHeight={Math.max(260, height - 300)} />
+      ) : (
+        <>
+      <View style={{ backgroundColor: S.chassis, borderRadius: 34, borderWidth: 6, borderColor: S.chassisEdge, padding: narrow ? 12 : 18, gap: 14 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <HwButton label="STOP" color="#C8231F" active={!go} onPress={emergencyStop} />
+          <Text style={{ flexShrink: 1, color: '#AEB5BE', fontSize: narrow ? 12 : 16, fontWeight: F.bold, letterSpacing: narrow ? 1 : 3, textAlign: 'center' }} numberOfLines={1}>
+            ESU {info?.model ?? 'ECoS'}
+          </Text>
+          <HwButton label="GO" color="#21A355" active={go} onPress={() => setPower(true)} />
         </View>
+        {narrow ? (
+          // telefoon: het scherm over de hele breedte, de draaiknoppen eronder
+          <>
+            {screenView}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+              <HardKnob id={left} size={knob} side="L" onPick={() => setPicker(0)} />
+              <HardKnob id={right} size={knob} side="R" onPick={() => setPicker(1)} />
+            </View>
+          </>
+        ) : (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+            <HardKnob id={left} size={knob} side="L" onPick={() => setPicker(0)} />
+            {screenView}
+            <HardKnob id={right} size={knob} side="R" onPick={() => setPicker(1)} />
+          </View>
+        )}
       </View>
       <Text style={{ color: C.muted, fontSize: 15, lineHeight: 21 }}>
         Dit is een nagebouwd ECoS-bedienpaneel met live gegevens uit je centrale. Draai aan de knoppen om te rijden en tik op het scherm voor functies en wissels.

@@ -10,6 +10,7 @@ import { Button } from '../components/ui';
 import { metaKey, selectLoco } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { useScrollEnabled } from '../store/ui';
+import { useGutter } from '../lib/layout';
 import { useCurrentLocoId, useFunctions, useLoco, useLocoMeta, useMode, useRecentLocos } from '../store/hooks';
 import { useSettings } from '../store/settings';
 import { C, F } from '../theme';
@@ -75,6 +76,7 @@ export default function DriveScreen() {
   const meta = useLocoMeta(id);
   const funcs = useFunctions(loco, meta);
   const [picker, setPicker] = useState(false);
+  const gutter = useGutter();
 
   if (conn !== 'connected') return <NotConnected />;
   if (!loco || id == null) {
@@ -88,7 +90,7 @@ export default function DriveScreen() {
 
   return (
     <>
-      <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
+      <ScrollView scrollEnabled={scrollEnabled} contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: gutter === 24 ? 16 : 12 }}>
         <RecentStrip current={id} onMore={() => setPicker(true)} />
         <CabControl id={id} loco={loco} meta={meta} funcs={funcs} onSwitch={() => setPicker(true)} />
         <Text style={{ color: C.muted, fontSize: 13, textAlign: 'center' }}>Scroll aan het duimwiel: omhoog is meer gas, omlaag minder. Bij vol gas stopt het; terugdraaien neemt meteen gas terug.</Text>

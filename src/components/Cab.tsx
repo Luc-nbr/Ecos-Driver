@@ -1,7 +1,7 @@
 // De rijregelaar ("cab"): snelheidsmeter in rijstappen, verticaal duimwiel,
 // knoppen voor richting, stap, halt en noodstop, en de functielijst.
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import { LayoutChangeEvent, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import Svg, { Circle, Defs, Line, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import type { LocoInfo } from '../ecos/client';
 import { setDirection, setFunction, setSpeed, stopLoco, toggleFunction } from '../store/actions';
@@ -281,7 +281,7 @@ function Ringed({ text, color, size }: { text: string; color: string; size: numb
  * ← → / − + / H ! — als raster van 2 kolommen ('grid') of 3 kolommen ('compact').
  * H = loc rustig laten stoppen (rijstap 0), ! = noodstop van deze loc.
  */
-export function CabButtons({ id, loco, steps, layout = 'grid', w = 68, h = 52 }: { id: number; loco: LocoInfo; steps: number; layout?: 'grid' | 'compact'; w?: number; h?: number }) {
+export function CabButtons({ id, loco, steps, layout = 'grid', w = 68, h = 52 }: { id: number; loco: LocoInfo; steps: number; layout?: 'grid' | 'compact' | 'row'; w?: number; h?: number }) {
   const neutral = useEcos((s) => !!s.neutral[id]);
   const step = toStep(loco.speed, steps);
   const bump = (d: number) => {
@@ -325,7 +325,12 @@ export function CabButtons({ id, loco, steps, layout = 'grid', w = 68, h = 52 }:
       </CabButton>
     ),
   };
-  const rows = layout === 'grid' ? [[b.rev, b.fwd], [b.minus, b.plus], [b.halt, b.stop]] : [[b.rev, b.fwd, b.halt], [b.minus, b.plus, b.stop]];
+  const rows =
+    layout === 'grid'
+      ? [[b.rev, b.fwd], [b.minus, b.plus], [b.halt, b.stop]]
+      : layout === 'row'
+        ? [[b.rev, b.fwd, b.minus, b.plus, b.halt, b.stop]]
+        : [[b.rev, b.fwd, b.halt], [b.minus, b.plus, b.stop]];
   const gap = layout === 'grid' ? 10 : 6;
   return (
     <View style={{ gap }}>
@@ -362,12 +367,12 @@ export function StepBar({ id, loco, steps, height = 24 }: { id: number; loco: Lo
 
 function CabHeader({ id, loco, meta, steps, onSwitch, slotLabel, narrow }: { id: number; loco: LocoInfo; meta: LocoMeta; steps: number; onSwitch: () => void; slotLabel?: string; narrow?: boolean }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-      <LocoPhoto ecosId={id} uri={meta.photo} style={narrow ? { width: 96, height: 60 } : { width: 128, height: 76 }} rounded={12} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: narrow ? 10 : 14 }}>
+      <LocoPhoto ecosId={id} uri={meta.photo} style={narrow ? { width: 88, height: 56 } : { width: 128, height: 76 }} rounded={12} />
       <View style={{ flex: 1, minWidth: 0, gap: 3 }}>
         {slotLabel ? <Text style={{ color: C.muted, fontSize: 12, fontWeight: F.bold }}>{slotLabel.toUpperCase()}</Text> : null}
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ flex: 1, color: C.text, fontSize: 22, fontWeight: F.bold }} numberOfLines={1}>
+          <Text style={{ flex: 1, color: C.text, fontSize: narrow ? 19 : 22, fontWeight: F.bold }} numberOfLines={1}>
             {loco.name}
           </Text>
           <LocoSwitchButton onPress={onSwitch} compact={narrow} />
@@ -475,22 +480,41 @@ export function CabControl({
   const step = toStep(loco.speed, steps);
   const [w, setW] = useState(0);
   const narrow = w > 0 && w < 470;
+  // telefoon staand: meter en duimwiel naast elkaar, de knoppen in één rij eronder
+  const stacked = w > 0 && w < 420;
   const btnW = narrow ? 58 : 68;
   const btnH = btnW < 68 ? 46 : 54;
   const wheelW = btnW < 68 ? 56 : 68;
   // meter vult de rest van de breedte
-  const gauge = Math.round(Math.max(150, Math.min(maxGauge, w - wheelW - (btnW * 2 + 10) - 56)));
+  // liggend op een telefoon: meter niet hoger dan het scherm
+  const { height: winH } = useWindowDimensions();
+  const cap = Math.min(maxGauge, Math.max(150, winH - 190));
+  const gauge = stacked
+    ? Math.round(Math.max(150, Math.min(260, w - wheelW - 28)))
+    : Math.round(Math.max(150, Math.min(cap, w - wheelW - (btnW * 2 + 10) - 56)));
+  const rowBtnW = Math.floor((w - 5 * 6) / 6);
   return (
-    <View style={[card(), { padding: 18, gap: 18 }]}>
+    <View style={[card(), { padding: stacked ? 14 : 18, gap: stacked ? 14 : 18 }]}>
       <CabHeader id={id} loco={loco} meta={meta} steps={steps} onSwitch={onSwitch} slotLabel={slotLabel} narrow={narrow} />
-      <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 12, minHeight: gauge }}>
+      <View onLayout={(e) => setW(e.nativeEvent.layout.width)} style={{ gap: 14 }}>
         {w > 0 ? (
-          <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly', gap: 12, minHeight: gauge }}>
             <SpeedGauge step={step} steps={steps} size={gauge} />
-            <ThumbWheel step={step} steps={steps} onChange={(s) => setSpeed(id, fromStep(s, steps))} width={wheelW} height={Math.round(gauge * (narrow ? 1.3 : 0.96))} disabled={neutral} label={`Snelheid ${loco.name}`} />
-            <CabButtons id={id} loco={loco} steps={steps} w={btnW} h={btnH} />
-          </>
-        ) : null}
+            <ThumbWheel
+              step={step}
+              steps={steps}
+              onChange={(s) => setSpeed(id, fromStep(s, steps))}
+              width={wheelW}
+              height={Math.round(gauge * (stacked ? 1.1 : narrow ? 1.3 : 0.96))}
+              disabled={neutral}
+              label={`Snelheid ${loco.name}`}
+            />
+            {stacked ? null : <CabButtons id={id} loco={loco} steps={steps} w={btnW} h={btnH} />}
+          </View>
+        ) : (
+          <View style={{ minHeight: 150 }} />
+        )}
+        {stacked ? <CabButtons id={id} loco={loco} steps={steps} layout="row" w={rowBtnW} h={Math.min(52, rowBtnW)} /> : null}
       </View>
       {neutral ? <Text style={{ color: C.muted, fontSize: 14, textAlign: 'center', marginTop: -8 }}>Kies eerst een rijrichting met ← of →</Text> : null}
       <View style={{ height: StyleSheet.hairlineWidth, backgroundColor: C.border }} />

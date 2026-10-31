@@ -9,6 +9,7 @@ import { useEcos } from '../store/ecos';
 import { Profile, useSettings } from '../store/settings';
 import { C, F, R, themed } from '../theme';
 import { LOCAL_NETWORK_HINT, THE_DEVICE } from '../lib/device';
+import { useGutter } from '../lib/layout';
 
 const input = themed(() => ({ backgroundColor: C.panel2, borderRadius: 12, color: C.text, fontSize: 17, paddingHorizontal: 14, height: 48 }) as const);
 
@@ -82,6 +83,7 @@ function ProfileSheet({ profile, onClose }: { profile: Profile | null; onClose: 
 
 export default function CentralesScreen() {
   const s = useSettings();
+  const gutter = useGutter();
   const conn = useEcos((x) => x.conn);
   const mode = useEcos((x) => x.mode);
   const error = useEcos((x) => x.error);
@@ -99,7 +101,7 @@ export default function CentralesScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 16 }} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: 16 }} keyboardShouldPersistTaps="handled">
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
         <StatTile value={String(s.profiles.length)} label={s.profiles.length === 1 ? 'Centrale' : 'Centrales'} icon="server" />
         <StatTile

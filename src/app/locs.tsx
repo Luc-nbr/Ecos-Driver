@@ -15,6 +15,7 @@ import { useMode } from '../store/hooks';
 import { useSettings } from '../store/settings';
 import { C, F, R } from '../theme';
 import { THE_DEVICE } from '../lib/device';
+import { useGutter } from '../lib/layout';
 
 type Tab = 'locs' | 'acc';
 type Sort = 'naam' | 'adres' | 'protocol';
@@ -42,7 +43,10 @@ export default function LibraryScreen() {
   const [editing, setEditing] = useState<{ id: number | null } | null>(null);
   const [removing, setRemoving] = useState<number | null>(null);
   const { width } = useWindowDimensions();
+  const gutter = useGutter();
   const showKind = width >= 1100;
+  // smal scherm: adres en protocol onder de naam in plaats van eigen kolommen
+  const narrow = width < 600;
 
   const list = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -79,7 +83,7 @@ export default function LibraryScreen() {
 
   return (
     <>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24, gap: 14 }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: gutter, paddingBottom: gutter, gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <View style={{ flex: 1, maxWidth: 460 }}>
             <Segmented
@@ -87,13 +91,13 @@ export default function LibraryScreen() {
               value={tab}
               onChange={setTab}
               options={[
-                { value: 'locs', label: `Locomotieven (${ids.length})` },
-                { value: 'acc', label: `Wissels en rijwegen (${accIds.length})` },
+                { value: 'locs', label: narrow ? `Locs (${ids.length})` : `Locomotieven (${ids.length})` },
+                { value: 'acc', label: narrow ? `Wissels (${accIds.length})` : `Wissels en rijwegen (${accIds.length})` },
               ]}
             />
           </View>
-          <View style={{ flex: 1 }} />
-          {tab === 'locs' ? <Button title="Nieuwe loc" icon="plus" kind="primary" small onPress={() => setEditing({ id: null })} /> : null}
+          {narrow ? null : <View style={{ flex: 1 }} />}
+          {tab === 'locs' ? <Button title={narrow ? 'Nieuw' : 'Nieuwe loc'} icon="plus" kind="primary" small onPress={() => setEditing({ id: null })} /> : null}
         </View>
 
         {tab === 'locs' ? (
@@ -103,7 +107,7 @@ export default function LibraryScreen() {
               <TextInput
                 value={q}
                 onChangeText={setQ}
-                placeholder="Zoeken op naam, adres of omschrijving"
+                placeholder={narrow ? 'Zoek loc' : 'Zoeken op naam, adres of omschrijving'}
                 placeholderTextColor={C.muted}
                 style={{ flex: 1, color: C.text, fontSize: 17, height: 44 }}
                 accessibilityLabel="Zoek loc"
@@ -127,14 +131,23 @@ export default function LibraryScreen() {
             </ScrollView>
 
             <View style={{ backgroundColor: C.panel, borderRadius: R.lg, overflow: 'hidden', borderWidth: StyleSheet.hairlineWidth, borderColor: C.border }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, height: 40, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border }}>
-                <View style={{ width: 72 }} />
-                <Header label="Naam" k="naam" flex={1} />
-                <Header label="Adres" k="adres" w={70} />
-                <Header label="Protocol" k="protocol" w={86} />
-                {showKind ? <Header label="Soort" w={100} /> : null}
-                <View style={{ width: 120 }} />
-              </View>
+              {narrow ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingHorizontal: 12, height: 40, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border }}>
+                  <Text style={{ color: C.muted, fontSize: 13 }}>Sorteren:</Text>
+                  <Header label="Naam" k="naam" />
+                  <Header label="Adres" k="adres" />
+                  <Header label="Protocol" k="protocol" />
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, height: 40, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border }}>
+                  <View style={{ width: 72 }} />
+                  <Header label="Naam" k="naam" flex={1} />
+                  <Header label="Adres" k="adres" w={70} />
+                  <Header label="Protocol" k="protocol" w={86} />
+                  {showKind ? <Header label="Soort" w={100} /> : null}
+                  <View style={{ width: 120 }} />
+                </View>
+              )}
               {list.map((id, i) => {
                 const l = locos[id];
                 const m = metaAll[metaKey(id, mode)] ?? {};
@@ -148,12 +161,12 @@ export default function LibraryScreen() {
                       router.navigate('/');
                     }}
                     style={({ pressed }) => [
-                      { flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingVertical: 8, minHeight: 64 },
+                      { flexDirection: 'row', alignItems: 'center', gap: narrow ? 10 : 14, paddingHorizontal: narrow ? 12 : 16, paddingVertical: 8, minHeight: 64 },
                       i < list.length - 1 ? { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.border } : null,
                       pressed ? { backgroundColor: C.panel2 } : null,
                     ]}
                   >
-                    <LocoPhoto ecosId={id} uri={m.photo} style={{ width: 72, height: 44 }} rounded={8} />
+                    <LocoPhoto ecosId={id} uri={m.photo} style={narrow ? { width: 56, height: 36 } : { width: 72, height: 44 }} rounded={8} />
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                         <Text style={{ color: C.text, fontSize: 16, fontWeight: F.semi, flexShrink: 1 }} numberOfLines={1}>
@@ -162,30 +175,34 @@ export default function LibraryScreen() {
                         {l.speed > 0 ? <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: C.green }} /> : null}
                       </View>
                       <Text style={{ color: C.muted, fontSize: 13 }} numberOfLines={1}>
-                        {m.subtitle || ' '}
+                        {narrow ? [`[${l.addr}]`, l.protocol, m.subtitle].filter(Boolean).join(' · ') : m.subtitle || ' '}
                       </Text>
                     </View>
-                    <Text style={{ width: 70, color: C.textSoft, fontSize: 15, fontVariant: ['tabular-nums'] }}>{l.addr}</Text>
-                    <Text style={{ width: 86, color: C.textSoft, fontSize: 15 }}>{l.protocol}</Text>
+                    {narrow ? null : (
+                      <>
+                        <Text style={{ width: 70, color: C.textSoft, fontSize: 15, fontVariant: ['tabular-nums'] }}>{l.addr}</Text>
+                        <Text style={{ width: 86, color: C.textSoft, fontSize: 15 }}>{l.protocol}</Text>
+                      </>
+                    )}
                     {showKind ? (
                       <Text style={{ width: 100, color: C.muted, fontSize: 14 }} numberOfLines={1}>
                         {m.kind ? KIND_SHORT[m.kind] ?? m.kind : '–'}
                       </Text>
                     ) : null}
-                    <View style={{ width: 120, flexDirection: 'row', justifyContent: 'flex-end', gap: 2 }}>
+                    <View style={{ width: narrow ? 108 : 120, flexDirection: 'row', justifyContent: 'flex-end', gap: narrow ? 0 : 2 }}>
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel={m.favorite ? 'Favoriet uitzetten' : 'Als favoriet markeren'}
                         onPress={() => setMeta(metaKey(id, mode), { favorite: !m.favorite })}
                         hitSlop={4}
-                        style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}
+                        style={{ width: narrow ? 36 : 40, height: 40, alignItems: 'center', justifyContent: 'center' }}
                       >
                         <Icon name="star" size={19} color={m.favorite ? C.accent : C.muted} fill={m.favorite ? C.accent : undefined} />
                       </Pressable>
-                      <Pressable accessibilityRole="button" accessibilityLabel={`${l.name} bewerken`} onPress={() => setEditing({ id })} hitSlop={4} style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+                      <Pressable accessibilityRole="button" accessibilityLabel={`${l.name} bewerken`} onPress={() => setEditing({ id })} hitSlop={4} style={{ width: narrow ? 36 : 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="edit" size={19} color={C.muted} />
                       </Pressable>
-                      <Pressable accessibilityRole="button" accessibilityLabel={`${l.name} verwijderen`} onPress={() => setRemoving(id)} hitSlop={4} style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
+                      <Pressable accessibilityRole="button" accessibilityLabel={`${l.name} verwijderen`} onPress={() => setRemoving(id)} hitSlop={4} style={{ width: narrow ? 36 : 40, height: 40, alignItems: 'center', justifyContent: 'center' }}>
                         <Icon name="trash" size={19} color={C.muted} />
                       </Pressable>
                     </View>

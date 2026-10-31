@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { usePhone } from '../lib/layout';
 import { metaKey } from '../store/actions';
 import { useEcos } from '../store/ecos';
 import { useMode, useRecentLocos } from '../store/hooks';
@@ -10,13 +11,14 @@ import { LocoPhoto } from './Loco';
 import { Button, Segmented } from './ui';
 
 export function Sheet({ visible, onClose, children, maxWidth = 640 }: { visible: boolean; onClose: () => void; children: React.ReactNode; maxWidth?: number }) {
+  const phone = usePhone();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityLabel="Sluiten" onPress={onClose} style={{ flex: 1, backgroundColor: C.backdrop, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <Pressable accessibilityLabel="Sluiten" onPress={onClose} style={{ flex: 1, backgroundColor: C.backdrop, alignItems: 'center', justifyContent: 'center', padding: phone ? 12 : 24 }}>
         <Pressable
           onPress={() => {}}
           style={[
-            { width: '100%', maxWidth, maxHeight: '88%', backgroundColor: C.panel, borderRadius: R.xl, padding: 20, gap: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
+            { width: '100%', maxWidth, maxHeight: '88%', backgroundColor: C.panel, borderRadius: R.xl, padding: phone ? 16 : 20, gap: 14, borderWidth: StyleSheet.hairlineWidth, borderColor: C.border },
             shadow,
           ]}
         >
@@ -79,6 +81,7 @@ export function LocoPicker({
   const mode = useMode();
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('alle');
+  const phone = usePhone();
 
   const list = useMemo(() => {
     const t = q.trim().toLowerCase();
@@ -131,11 +134,13 @@ export function LocoPicker({
               accessibilityLabel={`Kies ${l.name}`}
               onPress={() => onPick(item)}
               style={({ pressed }) => [
-                { width: 162, flexGrow: 1, maxWidth: 230, borderRadius: 16, backgroundColor: C.panel2, overflow: 'hidden' },
+                // telefoon: altijd twee kolommen
+                phone ? { width: '47%', flexGrow: 1, maxWidth: '49%' } : { width: 162, flexGrow: 1, maxWidth: 230 },
+                { borderRadius: 16, backgroundColor: C.panel2, overflow: 'hidden' },
                 pressed ? { opacity: 0.75 } : null,
               ]}
             >
-              <LocoPhoto ecosId={item} uri={m?.photo} style={{ height: 92 }} rounded={0} />
+              <LocoPhoto ecosId={item} uri={m?.photo} style={{ height: phone ? 76 : 92 }} rounded={0} />
               <View style={{ padding: 10 }}>
                 <Text style={{ color: C.text, fontSize: 15, fontWeight: F.semi }} numberOfLines={1}>
                   {l.name}
